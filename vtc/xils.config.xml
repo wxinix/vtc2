@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--X-in-Loop Simulator/Controller Interface (XilSCI) Universal Configuration File-->
+<XilSCI version="1.0" simulation_step="0.1" log_sdlc_frames="true">
+    <cabinet index="1">
+        <cu id="2023"/>
+        <mmu channel_compatibility="00001020A020280202B02300A60218"/>
+        <wirings>
+            <load_switch_wirings>
+                <load_switch_wiring>
+                    <load_switch channel="1"/>
+                    <signal_group id="99" desc="Phase 1 - Vehicle NB Left">
+                        <movement approach="3" turn="2"/>
+                    </signal_group>
+                </load_switch_wiring>
+                <load_switch_wiring>
+                    <load_switch channel="2"/>
+                    <signal_group id="0" desc="Phase 2 - Vehicle SB Thru/Right">
+                        <movement approach="1" turn="0"/>
+                        <movement approach="1" turn="1"/>
+                    </signal_group>
+                </load_switch_wiring>
+                <load_switch_wiring>
+                    <load_switch channel="3"/>
+                    <signal_group id="0" desc="Phase 3 - Vehicle EB Left">
+                        <movement approach="2" turn="2"/>
+                    </signal_group>
+                </load_switch_wiring>
+                <load_switch_wiring>
+                    <load_switch channel="4"/>
+                    <signal_group id="0" desc="Phase 4 - Vehicle WB Thru/Right">
+                        <movement approach="4" turn="0"/>
+                        <movement approach="4" turn="1"/>
+                    </signal_group>
+                </load_switch_wiring>
+                <load_switch_wiring>
+                    <load_switch channel="5"/>
+                    <signal_group id="0" desc="Phase 5 - Vehicle SB Left">
+                        <movement approach="1" turn="2"/>
+                    </signal_group>
+                </load_switch_wiring>
+                <load_switch_wiring>
+                    <load_switch channel="6"/>
+                    <signal_group id="0" desc="Phase 6 - Vehicle NB Thru/Right">
+                        <movement approach="3" turn="0"/>
+                        <movement approach="3" turn="1"/>
+                    </signal_group>
+                </load_switch_wiring>
+                <load_switch_wiring>
+                    <load_switch channel="7"/>
+                    <signal_group id="0" desc="Phase 7 - Vehicle WB Left">
+                        <movement approach="4" turn="2"/>
+                    </signal_group>
+                </load_switch_wiring>
+                <load_switch_wiring>
+                    <load_switch channel="8"/>
+                    <signal_group id="0" desc="Phase 8 - Vehicle EB Thru/Right">
+                        <movement approach="2" turn="0"/>
+                        <movement approach="2" turn="1"/>
+                    </signal_group>
+                </load_switch_wiring>
+            </load_switch_wirings>
+            <detector_wirings>
+                <detector_wiring>
+                    <detector_unit channel="1"/>
+                    <detection_zones>
+                        <detection_zone id="5"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="2"/>
+                    <detection_zones>
+                        <detection_zone id="1"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="3"/>
+                    <detection_zones>
+                        <detection_zone id="2"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="5"/>
+                    <detection_zones>
+                        <detection_zone id="9"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="6"/>
+                    <detection_zones>
+                        <detection_zone id="8"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="7"/>
+                    <detection_zones>
+                        <detection_zone id="6"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="8"/>
+                    <detection_zones>
+                        <detection_zone id="7"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="9"/>
+                    <detection_zones>
+                        <detection_zone id="28"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="10"/>
+                    <detection_zones>
+                        <detection_zone id="29"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="11"/>
+                    <detection_zones>
+                        <detection_zone id="24"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="12"/>
+                    <detection_zones>
+                        <detection_zone id="25"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="14"/>
+                    <detection_zones>
+                        <detection_zone id="33"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="15"/>
+                    <detection_zones>
+                        <detection_zone id="34"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="16"/>
+                    <detection_zones>
+                        <detection_zone id="35"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="17"/>
+                    <detection_zones>
+                        <detection_zone id="36"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="18"/>
+                    <detection_zones>
+                        <detection_zone id="30"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="19"/>
+                    <detection_zones>
+                        <detection_zone id="42"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="20"/>
+                    <detection_zones>
+                        <detection_zone id="38"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="21"/>
+                    <detection_zones>
+                        <detection_zone id="39"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="23"/>
+                    <detection_zones>
+                        <detection_zone id="45"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="24"/>
+                    <detection_zones>
+                        <detection_zone id="46"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="25"/>
+                    <detection_zones>
+                        <detection_zone id="47"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="26"/>
+                    <detection_zones>
+                        <detection_zone id="48"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="27"/>
+                    <detection_zones>
+                        <detection_zone id="18"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="28"/>
+                    <detection_zones>
+                        <detection_zone id="16"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="29"/>
+                    <detection_zones>
+                        <detection_zone id="12"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="30"/>
+                    <detection_zones>
+                        <detection_zone id="13"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="32"/>
+                    <detection_zones>
+                        <detection_zone id="19"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="33"/>
+                    <detection_zones>
+                        <detection_zone id="20"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="34"/>
+                    <detection_zones>
+                        <detection_zone id="21"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="35"/>
+                    <detection_zones>
+                        <detection_zone id="22"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="36"/>
+                    <detection_zones>
+                        <detection_zone id="23"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="49"/>
+                    <detection_zones>
+                        <detection_zone id="11"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="50"/>
+                    <detection_zones>
+                        <detection_zone id="10"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="51"/>
+                    <detection_zones>
+                        <detection_zone id="32"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="52"/>
+                    <detection_zones>
+                        <detection_zone id="31"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="53"/>
+                    <detection_zones>
+                        <detection_zone id="44"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="54"/>
+                    <detection_zones>
+                        <detection_zone id="43"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="55"/>
+                    <detection_zones>
+                        <detection_zone id="17"/>
+                    </detection_zones>
+                </detector_wiring>
+                <detector_wiring>
+                    <detector_unit channel="56"/>
+                    <detection_zones>
+                        <detection_zone id="14"/>
+                    </detection_zones>
+                </detector_wiring>
+            </detector_wirings>
+        </wirings>
+    </cabinet>
+</XilSCI>
