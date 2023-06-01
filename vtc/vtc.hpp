@@ -1258,6 +1258,7 @@ struct DetectorUnitBase : public AbstractDetectorUnit
   {
     return static_cast<const Derived *>(this)->state.value == Bit::On;
   }
+
   [[nodiscard]] bool operator()() const noexcept final
   {
     return activated();
