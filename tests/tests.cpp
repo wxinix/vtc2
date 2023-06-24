@@ -39,6 +39,18 @@ TEST_CASE("TEST_CASE - basic vtc types")
     CHECK_EQ(bit, Bit::On);
   }
 
+  SUBCASE("can use SdlcStationDeviceKind")
+  {
+    SdlcStationDeviceKind dk = SdlcStationDeviceKind::Mmu;
+    CHECK_EQ(dk, SdlcStationDeviceKind::Mmu);
+    dk = SdlcStationDeviceKind::Biu;
+    CHECK_EQ(dk, SdlcStationDeviceKind::Biu);
+    dk = SdlcStationDeviceKind::Cu;
+    CHECK_EQ(dk, SdlcStationDeviceKind::Cu);
+    dk = SdlcStationDeviceKind::Rack;
+    CHECK_EQ(dk, SdlcStationDeviceKind::Rack);
+  }
+
   SUBCASE("can use IoBinding::Cu")
   {
     using T = io::Variable<1, IoBinding::Cu, Cardinal, 1>;
