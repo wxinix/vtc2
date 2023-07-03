@@ -1,4 +1,4 @@
-/*!
+/**
   C++ Virtualization Library of Traffic Cabinet 2
   Copyright (c) Wuping Xin
   MPL 1.1/GPL 2.0/LGPL 2.1 tri-license
@@ -14,55 +14,57 @@
 
 namespace vtc {
 
-/*!
+/**
  * Maximum number of load switch channels supported by each virtual cabinet.
  */
 constexpr size_t MAX_LOAD_SWITCHES{32};
 
-/*!
+/**
  * Maximum number of detector channels supported by each virtual cabinet.
  */
 constexpr size_t MAX_VEHICLE_DETECTORS{128};
 
-/*!
+/**
  * Maximum number of virtual cabinets supported by this framework.
  */
 constexpr size_t MAX_CABINETS{16};
 
-/*!
+/**
  * The buffer size of SDLC instance processor.
  */
 constexpr size_t MAX_SDLC_FRAME_BYTES{64};
 
+/**
+ * A bit has two states: Off and On.
+ */
 enum class Bit : bool
 {
   Off = false,
   On = true
 };
 
-/*
+/**
  * 8 bit unsigned integer.
  */
 using Byte = uint8_t;
 
-/*
+/**
  * 16 bit unsigned integer.
  */
 using Word = uint16_t;
 
-/*
+/**
  * 32 bit unsigned integer.l
  */
 using Cardinal = uint32_t;
 
-/*
-   Unsigned integer with its digits represented as 8 octets. For example,
-   octets 0x30 ('0'), 0x31 ('1'), 0x32 ('2'), 0x33 ('3'), 0x34('4'), 0x35('5'),
-   0x36('6'), 0x37('7'), when assigned to a OctetNumber, the numerical value
-   is 1234567, with the leading 0 trimmed.
-
-   We use 8 byte uint64_t as the internal storage, because it has trivial
-   constructor and lock-free, good for thread-safe usage with std::atomic<T>.
+/**
+ * Unsigned integer with its digits represented as 8 octets (chars). For example,
+ * octets 0x30 ('0'), 0x31 ('1'), 0x32 ('2'), 0x33 ('3'), 0x34('4'), 0x35('5'),
+ * 0x36('6'), 0x37('7') represents a numerical value 1234567, with the leading
+ * '0' trimmed.
+ * @remarks 8-byte uint64_t used as the internal storage, because it has trivial
+ * constructor and lock-free, ready for std::atomic<T>.
  */
 using OctetNumber = uint64_t;
 
@@ -74,55 +76,77 @@ using Index = uint16_t;
 template<Index I, size_t N>
 concept ValidIndex = (I >= 1) && (I <= N);
 
+/**
+ * Index of a cabinet.
+ */
 using CabinetIndex = Index;
 
 template<CabinetIndex Cabinet>
 concept ValidCabinetIndex = ValidIndex<Cabinet, MAX_CABINETS>;
 
+/**
+ * ID of detector channel.
+ */
 using DetectorChannel = Index;
 
 template<DetectorChannel Ch>
 concept ValidDetectorChannel = ValidIndex<Ch, MAX_VEHICLE_DETECTORS>;
 
+/**
+ * ID of load switch channel.
+ */
 using LoadSwitchChannel = Index;
 
 template<LoadSwitchChannel Ch>
 concept ValidLoadSwitchChannel = ValidIndex<Ch, MAX_LOAD_SWITCHES>;
 
+/**
+ * ID of controller.
+ */
 using ControllerID = Cardinal;
 
-/*!
+/**
  * ID of detection zone. Multiple detection zones can be wired to one detector unit.
  */
 using DetectionZoneID = Cardinal;
 
+/**
+ * Detection zone ID list.
+ */
 using DetectionZoneIDs = std::vector<DetectionZoneID>;
 
-/*!
- * ID of a signalized intersection approach. In TransModeler, this is the same
- * as "signal id" for the subject approach.
+/**
+ * ID of a signalized intersection approach. In TransModeler, this is equivalent
+ * to "signal id" for the subject approach.
  */
 using ApproachID = Cardinal;
 
-/*!
- * ID of a turn movement that belongs to a specific approach. 0 means the rightmost
- * turn movement, and so on. For a typical three turn movements scenario, 0
- * represents right turn movement, 1 represents through movement, and 2 represents
- * left turn movement. In rare case that an approach has 5 turn movements, then from
- * right to left, the ID is counted as 0, 1, 2, 3, 4, 5.
+/**
+ * Index of a turn movement that belongs to a specific approach. 0 means the
+ * rightmost one, and so on. For a typical three turn movements scenario, 0
+ * represents right turn movement, 1 through movement, and 2 left turn.
+ *
+ * In the context of TransModeler, for signal movement index (that counted from
+ * right to left), depending on the number of movements, the index of a particular
+ * movement is not fixed.
  */
-using TurnID = Byte;
+using TurnIndex = Byte;
 
-/*!
+/**
  * A turn movement of an approach.
  */
-using Movement = std::tuple<ApproachID, TurnID>;
+using Movement = std::tuple<ApproachID, TurnIndex>;
 
-/*!
- * A signal group refers to a specific movement or set of movements of vehicles
- * at an intersection that can be controlled by a load switch output.
+/**
+ * ID of signal group.
  */
 using SignalGroupID = Byte;
+
+/**
+ * A signal group refers to a specific movement or set of movements of vehicles
+ * at an intersection that can be controlled by a load switch output. This class
+ * includes a tuple of SignalGroupID and the associated list of movements.
+ */
 using SignalGroup = std::tuple<SignalGroupID, std::vector<Movement>>;
 
 template<typename T>
@@ -131,6 +155,13 @@ std::tuple<bool, size_t> octets_to_uint32(const T &)
   return {false, 0xFFFFFFFF};
 }
 
+/**
+ * Converts octet bytes (up to 8) to its literal uint32 value.
+ * @param octets OctetNumberType using 8 bytes. The leading and trailing hex 0's
+ * will be trimmed. Hex 0's are not allowed in between. "Significant" bytes must
+ * be ASCII chars between '0' and '9'.
+ * @return
+ */
 template<OctetNumberType T>
 std::tuple<bool, uint32_t> octets_to_uint32(const T &octets)
 {
@@ -162,172 +193,266 @@ std::tuple<bool, uint32_t> octets_to_uint32(const T &octets)
   return {is_valid, value};
 }
 
-enum class SdlcStationDeviceKind
+/**
+ * Different kind of cabinet device.
+ */
+enum class DeviceKind
 {
-  Mmu [[maybe_unused]],
+  /**
+   * Malfunction Management Unit.
+   */
+  Mmu,
+
+  /**
+   * Bus Interface Unit.
+   */
   Biu,
-  Cu [[maybe_unused]],
+
+  /**
+   * Controller Unit.
+   */
+  Cu,
+
+  /**
+   * Rack such as Detector Rack or BIU Rack.
+   */
   Rack,
 };
 
-struct AbstractSdlcStationDevice
-{
-  virtual ~AbstractSdlcStationDevice() = default;
-
-  /*!
-   * Used for situation where controller unit propels the process loop in real-time:
-   * CU sends command instance first, and secondary station responds. This is typical
-   * of a hardware-in-the-loop simulation.
-   * @param data_in The command frame from controller unit.
-   * @return
-   */
-  virtual std::tuple<bool, std::span<const Byte>> Dispatch(std::span<const Byte> data_in) = 0;
-
-  /*!
-   * Used for situation where a traffic simulator propels the process.
-   * @param frame_id
-   * @return
-   */
-  virtual std::tuple<bool, std::span<const Byte>> GenerateResponseFrame(Byte frame_id) = 0;
-
-  /*!
-   * Used for situation where a traffic simulator propels the process.
-   * @param data
-   * @return
-   */
-  virtual bool ProcessCommandFrame(std::span<const Byte> data) = 0;
-
-  /*!
-   * Reset the underlying I/O variables.
-   */
-  virtual void Reset() = 0;
-
-  [[nodiscard]] virtual Index cabinet() const = 0;
-  [[nodiscard]] virtual SdlcStationDeviceKind sdlc_station_device_kind() const = 0;
-};
-
+/**
+ * Base class of SDLC secondary station device using Curiously Recurring
+ * Template Pattern (CRTP).
+ * @tparam Derived Derived class type.
+ */
 template<typename Derived>
-struct SdlcStationDevice : public AbstractSdlcStationDevice
+struct SdlcSecondaryStationDevice
 {
-  std::tuple<bool, std::span<const Byte>> Dispatch(std::span<const Byte> data_in) final
+  /**
+   * Parses a received command frame and immediately generates the corresponding
+   * response frame.
+   * @param data_in The command frame received from controller unit.
+   * @return If success, returns the response frame to the command frame;
+   * otherwise, an empty byte array.
+   */
+  std::tuple<bool, std::span<const Byte>> Dispatch(std::span<const Byte> data_in)
   {
     return static_cast<Derived *>(this)->DoDispatch(data_in);
   }
 
-  std::tuple<bool, std::span<const Byte>> GenerateResponseFrame(Byte frame_id) final
+  /**
+   * Generates a response frame given a frame id. The payload will be based on
+   * the instantaneous states of the I/O variables bound to the device.
+   * @param frame_id Id of the response frame to be generated.
+   * @return If success, returns the response frame of the given id; otherwise,
+   * and empty byte array.
+   */
+  std::tuple<bool, std::span<const Byte>> GenerateResponseFrame(Byte frame_id)
   {
     return static_cast<Derived *>(this)->DoGenerateResponseFrame(frame_id);
   }
 
-  bool ProcessCommandFrame(const std::span<const Byte> data) final
+  /**
+   * Processes the command frame, and updates states of the I/O variables bound
+   * to this device accordingly.
+   * @param data The command frame to process.
+   * @return True for success and false otherwise.
+   */
+  bool ProcessCommandFrame(const std::span<const Byte> data)
   {
     return static_cast<Derived *>(this)->DoProcessCommandFrame(data);
   }
 
-  void Reset() final
+  /**
+   * Resets the underlying I/O variables that are bound to this device.
+   */
+  void Reset()
   {
     static_cast<Derived *>(this)->DoReset();
+  }
+
+  /**
+   * Returns the cabinet index of the subject device.
+   */
+  [[nodiscard]] static constexpr auto cabinet()
+  {
+    return Derived::get_cabinet();
+  }
+
+  /**
+   * Returns the kind of the subject device.
+   */
+  [[nodiscard]] static constexpr auto device_kind()
+  {
+    return Derived::get_device_kind();
   }
 };
 
 namespace io {
 
+/**
+ * Verifies that a type is one of the allowed types for specifying IO variable value.
+ * @tparam T The type to verify.
+ */
 template<typename T>
-concept ValidVariableValueType = std::disjunction_v<
+concept ValidIoVariableValueType = std::disjunction_v<
     std::is_same<T, Bit>,
     std::is_same<T, Byte>,
     std::is_same<T, Word>,
     std::is_same<T, Cardinal>,
     std::is_same<T, OctetNumber>>;
 
-struct VariableType
-{
-};
-
+/**
+ * Specifies the housing device to binds an IO variable to.
+ */
 enum class IoBinding
 {
-  Fio,
-  Mmu,
-  Cu
+  Fio, /* Field IO */
+  Mmu, /* Malfunction Management Unit */
+  Cu   /* Controller Unit */
 };
 
-template<CabinetIndex Cabinet, IoBinding Binding, ValidVariableValueType ValueT, Index VariableIndex>
+template<typename T>
+concept IoVariableType = requires {
+  {
+    T::binding()
+  } -> std::same_as<IoBinding>;
+
+  ValidIoVariableValueType<typename T::IoVariable::value_t>;
+};
+
+/**
+ * IO IoVariable class.
+ * @tparam Cabinet Index of the cabinet.
+ * @tparam Binding IO binding of the variable.
+ * @tparam ValueT Value type.
+ * @tparam VariableIndex Index of the variable.
+ */
+template<CabinetIndex Cabinet, IoBinding Binding, ValidIoVariableValueType ValueT, Index VariableIndex>
   requires std::atomic<ValueT>::is_always_lock_free
-struct Variable
+struct IoVariable
 {
   using value_t = ValueT;
-  using type = VariableType;
 
-  Variable() = default;
-  Variable(Variable &) = delete;
-  Variable(Variable &&) = delete;
-  Variable &operator=(Variable &) = delete;
-  Variable &operator=(Variable &&) = delete;
+  IoVariable() = default;
 
-  static constexpr auto index{VariableIndex};
-  static constexpr auto cabinet{Cabinet};
-  static constexpr auto binding{Binding};
+  IoVariable(IoVariable &) = delete;
+
+  IoVariable(IoVariable &&) = delete;
+
+  IoVariable &operator=(IoVariable &) = delete;
+
+  IoVariable &operator=(IoVariable &&) = delete;
+
+  [[nodiscard]] static constexpr auto index()
+  {
+    return VariableIndex;
+  };
+
+  [[nodiscard]] static constexpr auto cabinet()
+  {
+    return Cabinet;
+  };
+
+  [[nodiscard]] static constexpr auto binding()
+  {
+    return Binding;
+  };
 
   std::atomic<ValueT> value{};
 };
 
 template<typename T>
-using VariableValueType = typename T::Variable::value_t;
+using IoVariableValueType = typename T::IoVariable::value_t;
 
+/**
+ * Simple scalar IO variable.
+ * @tparam Cabinet Index of the cabinet.
+ * @tparam Binding IO binding of the variable.
+ * @tparam ValueT Value type.
+ */
 template<CabinetIndex Cabinet, IoBinding Binding, typename ValueT>
-struct SimpleVariable : Variable<Cabinet, Binding, ValueT, 0>
+struct SimpleIoVariable : IoVariable<Cabinet, Binding, ValueT, 0>
 {
 };
 
-template<typename T>
-  requires std::is_same_v<typename T::Variable::type, VariableType>
+/**
+ * Defines an instance of the given IO variable type.
+ * @tparam T The type of the IO variable.
+ */
+template<IoVariableType T>
 T instance{};
 
+/**
+ * Vehicle detector call state.
+ * @tparam Cabinet Index of the cabinet.
+ * @tparam Binding IO binding of the detector.
+ * @tparam Ch Index of the detector.
+ */
 template<CabinetIndex Cabinet, IoBinding Binding, DetectorChannel Ch>
   requires ValidDetectorChannel<Ch>
-struct VehicleDetCall : Variable<Cabinet, Binding, Bit, Ch>
+struct VehicleDetCall : IoVariable<Cabinet, Binding, Bit, Ch>
 {
 };
 
-/*!
- The start of the simulation time in Linux timestamp format (i.e., Unix/POSIX
- timestamp), based on UTC. The value represents points in time as the number
- of seconds elapsed since the Unix epoch Jan 1, 1970 at 00:00:00 UTC.
-
- Note: Only the UTC time from the first message received by the external
- controller software (ECS) is used. The first message sets the time and clock
- in ECS that will be used by the its simulation.
+/**
+ * The start of the simulation time in Linux timestamp format, in terms of the
+ * number of seconds elapsed since the Unix epoch Jan 1, 1970 at 00:00:00 UTC.
+ * @remarks Only the UTC time from the first message received by the external
+ * controller software (ECS) is used.
  */
 template<IoBinding Binding>
-struct SimulationStartTime : SimpleVariable<0, Binding, Cardinal>
+struct SimulationStartTime : SimpleIoVariable<0, Binding, Cardinal>
 {
 };
 
+/**
+ * Red or DoNotWalk signal driver of a given load switch channel.
+ * @tparam Cabinet Index of the cabinet.
+ * @tparam Binding IO binding of the driver.
+ * @tparam Ch Index of the load switch channel.
+ */
 template<CabinetIndex Cabinet, IoBinding Binding, LoadSwitchChannel Ch>
   requires ValidLoadSwitchChannel<Ch>
-struct ChannelRedDoNotWalkDriver : Variable<Cabinet, Binding, Bit, Ch>
+struct ChannelRedDoNotWalkDriver : IoVariable<Cabinet, Binding, Bit, Ch>
 {
 };
 
+/**
+ * Yellow or Pedestrian Clearance signal driver of a given load switch channel.
+ * @tparam Cabinet Index of the cabinet.
+ * @tparam Binding IO binding of the driver.
+ * @tparam Ch Index of the load switch channel.
+ */
 template<CabinetIndex Cabinet, IoBinding Binding, LoadSwitchChannel Ch>
   requires ValidLoadSwitchChannel<Ch>
-struct ChannelYellowPedClearDriver : Variable<Cabinet, Binding, Bit, Ch>
+struct ChannelYellowPedClearDriver : IoVariable<Cabinet, Binding, Bit, Ch>
 {
 };
 
+/**
+ * Green or Walk signal driver of a given load switch channel.
+ * @tparam Cabinet Index of the cabinet.
+ * @tparam Binding IO binding of the driver.
+ * @tparam Ch Index of the load switch channel.
+ */
 template<CabinetIndex Cabinet, IoBinding Binding, LoadSwitchChannel Ch>
   requires ValidLoadSwitchChannel<Ch>
-struct ChannelGreenWalkDriver : Variable<Cabinet, Binding, Bit, Ch>
+struct ChannelGreenWalkDriver : IoVariable<Cabinet, Binding, Bit, Ch>
 {
 };
 
+/**
+ * Intersection ID stored as OctetNumber.
+ * @tparam Cabinet Index of the cabinet.
+ * @tparam Binding IO binding of the driver.
+ */
 template<CabinetIndex Cabinet, IoBinding Binding>
-struct IntersectionID : SimpleVariable<Cabinet, Binding, OctetNumber>
+struct IntersectionID : SimpleIoVariable<Cabinet, Binding, OctetNumber>
 {
   uint32_t to_uint32()
   {
-    auto [valid, value] = octets_to_uint32(this->value);
-    return valid ? value : 0xFFFFFFFF;
+    auto [_ /* valid */, value] = octets_to_uint32(this->value);
+    return value;
   }
 };
 
@@ -335,27 +460,70 @@ struct IntersectionID : SimpleVariable<Cabinet, Binding, OctetNumber>
 
 namespace frame {
 
-namespace detail {
-
-struct FrameElementType
+/**
+ * Kind of SDLC data frame: can be Command or Response.
+ */
+enum class FrameKind
 {
+  Command,
+  Response
 };
 
-template<typename T, size_t BitPos>
-  requires std::is_same_v<io::VariableValueType<T>, Bit>
-struct FrameBit
-{
-  using type = FrameElementType;
-
-  void operator<<(const std::span<const Byte> data_in)
+template<typename T>
+concept FrameType = requires {
   {
-    static auto bytepos = pos / 8;
+    T::frame_kind()
+  } -> std::same_as<FrameKind>;
+};
+
+template<typename T>
+concept CommandFrameType = requires {
+  {
+    T::frame_kind()
+  } -> std::same_as<FrameKind>;
+
+  T::frame_kind() == FrameKind::Command;
+};
+
+template<typename T>
+concept ResponseFrameType = requires {
+  {
+    T::frame_kind()
+  } -> std::same_as<FrameKind>;
+
+  T::frame_kind() == FrameKind::Response;
+};
+
+namespace detail {
+
+/**
+ * An element of data frame. An instance of the element can be stored as Bit,
+ * Byte, Word, Cardinal, or OctetNumber.
+ */
+struct FrameElement
+{
+  virtual void operator<<(std::span<const Byte> data_in) = 0;
+  virtual void operator>>(std::span<Byte> data_out) = 0;
+};
+
+/**
+ * Frame element stored as Bit.
+ * @tparam T The IO variable type, its value type is Bit.
+ * @tparam BitPos 0-based bit position in the frame payload.
+ */
+template<typename T, size_t BitPos>
+  requires std::is_same_v<io::IoVariableValueType<T>, Bit>
+struct FrameBit : FrameElement
+{
+  void operator<<(const std::span<const Byte> data_in) final
+  {
+    static auto byte_pos = pos / 8;
     static auto nbits_to_shift = pos % 8;
-    auto value = (data_in[bytepos] & (0x01 << nbits_to_shift)) != 0;
+    auto value = (data_in[byte_pos] & (0x01 << nbits_to_shift)) != 0;
     ref_var.value = static_cast<Bit>(value);
   }
 
-  void operator>>(const std::span<Byte> data_out)
+  void operator>>(const std::span<Byte> data_out) final
   {
     static auto byte_pos = pos / 8;
     static auto num_of_bits_to_shift = pos % 8;
@@ -367,18 +535,21 @@ struct FrameBit
   T &ref_var{io::instance<T>};
 };
 
+/**
+ * Frame element stored as Byte.
+ * @tparam T The IO variable type, its value type is Byte.
+ * @tparam BitPos 0-based byte position in the frame payload.
+ */
 template<typename T, size_t BytePos>
-  requires std::is_same_v<io::VariableValueType<T>, Byte>
-struct FrameByte
+  requires std::is_same_v<io::IoVariableValueType<T>, Byte>
+struct FrameByte : FrameElement
 {
-  using type = FrameElementType;
-
-  void operator<<(const std::span<const Byte> data_in)
+  void operator<<(const std::span<const Byte> data_in) final
   {
     ref_var.value = data_in[pos];
   }
 
-  void operator>>(const std::span<Byte> data_out)
+  void operator>>(const std::span<Byte> data_out) final
   {
     data_out[pos] = ref_var.value;
   }
@@ -387,18 +558,21 @@ struct FrameByte
   T &ref_var{io::instance<T>};
 };
 
+/**
+ * Frame element stored as Word.
+ * @tparam T The IO variable type, its value type is Word.
+ * @tparam BitPos 0-based starting byte position in the frame payload.
+ */
 template<typename T, size_t BytePos> /* BytePos: position of Word value low byte */
-  requires std::is_same_v<io::VariableValueType<T>, Word>
-struct FrameWord
+  requires std::is_same_v<io::IoVariableValueType<T>, Word>
+struct FrameWord : FrameElement
 {
-  using type = FrameElementType;
-
-  void operator<<(const std::span<const Byte> data_in)
+  void operator<<(const std::span<const Byte> data_in) final
   {
     ref_var.value = data_in[pos] | (data_in[pos + 1] << 8);// LByte | HByte
   }
 
-  void operator>>(const std::span<Byte> data_out)
+  void operator>>(const std::span<Byte> data_out) final
   {
     data_out[pos] = ref_var.value & 0xFF;
     data_out[pos + 1] = ref_var.value >> 8 & 0xFF;
@@ -408,13 +582,16 @@ struct FrameWord
   T &ref_var{io::instance<T>};
 };
 
+/**
+ * Frame element stored as Cardinal.
+ * @tparam T The IO variable type, its value type is Cardinal.
+ * @tparam BitPos 0-based byte position in the frame payload.
+ */
 template<typename T, size_t BytePos> /* BytePos: position of value the least significant byte */
-  requires std::is_same_v<io::VariableValueType<T>, Cardinal>
-struct FrameCardinal
+  requires std::is_same_v<io::IoVariableValueType<T>, Cardinal>
+struct FrameCardinal : FrameElement
 {
-  using type = FrameElementType;
-
-  void operator<<(const std::span<const Byte> data_in)
+  void operator<<(const std::span<const Byte> data_in) final
   {
     ref_var.value = data_in[pos]
         | data_in[pos + 1] << 8
@@ -422,7 +599,7 @@ struct FrameCardinal
         | data_in[pos + 3] << 24;
   }
 
-  void operator>>(const std::span<Byte> data_out)
+  void operator>>(const std::span<Byte> data_out) final
   {
     data_out[pos] = ref_var.value & 0xFF;
     data_out[pos + 1] = ref_var.value >> 0x08 & 0xFF;
@@ -434,13 +611,16 @@ struct FrameCardinal
   T &ref_var{io::instance<T>};
 };
 
+/**
+ * Frame element stored as OctetNumber.
+ * @tparam T The IO variable type, its value type is OctetNumber.
+ * @tparam BitPos 0-based byte position in the frame payload.
+ */
 template<typename T, size_t BytePos> /* BytePos: position of OctetString starting byte */
-  requires std::is_same_v<io::VariableValueType<T>, OctetNumber>
-struct FrameOctetNumber
+  requires std::is_same_v<io::IoVariableValueType<T>, OctetNumber>
+struct FrameOctetNumber : FrameElement
 {
-  using type = FrameElementType;
-
-  void operator<<(const std::span<const Byte> data_in)
+  void operator<<(const std::span<const Byte> data_in) final
   {
     OctetNumber value{0};
 
@@ -451,7 +631,7 @@ struct FrameOctetNumber
     ref_var.value = value;
   }
 
-  void operator>>(const std::span<Byte> data_out)
+  void operator>>(const std::span<Byte> data_out) final
   {
     for (auto i = 0; i < sizeof(OctetNumber); i++) {
       data_out[pos + i] = ref_var.value >> 8 * (sizeof(OctetNumber) - 1 - i);
@@ -466,16 +646,10 @@ template<size_t N>
 concept ValidFrameByteSize = (N >= 1) && (N <= MAX_SDLC_FRAME_BYTES);
 
 template<typename T>
-concept ValidFrameElement = std::is_same_v<typename T::type, FrameElementType>;
+concept ValidFrameElement = std::is_base_of_v<FrameElement, T>;
 
 template<size_t ByteSize, typename... Ts>
 concept ValidFrame = (ValidFrameElement<Ts> && ...) && ValidFrameByteSize<ByteSize>;
-
-enum class FrameKind
-{
-  Command,
-  Response
-};
 
 /*
   -------------------------------------------------------------------
@@ -487,21 +661,38 @@ enum class FrameKind
   192-255          Response Frame, Manufacturer's Use
   -------------------------------------------------------------------
  */
+
+/**
+ * This class enables a functional and declarative style for defining SDLC frames.
+ * @tparam Address SDLC address.
+ * @tparam FrameID Frame Type ID.
+ * @tparam FrameByteSize Number of bytes required by this frame.
+ * @tparam Binding IO binding for the underlying IO variables.
+ * @tparam FrameElementTs Frame element types.
+ */
 template<Byte Address,
          Byte FrameID,
          size_t FrameByteSize,
          io::IoBinding Binding,
-         typename... Ts>
-  requires ValidFrame<FrameByteSize, Ts...>
+         typename... FrameElementTs>
+  requires ValidFrame<FrameByteSize, FrameElementTs...>
 class Frame
 {
 public:
   Frame() noexcept = default;
+
   Frame(Frame &) = delete;
+
   Frame(Frame &&) = delete;
+
   Frame &operator=(Frame &) = delete;
+
   Frame &operator=(Frame &&) = delete;
 
+  /**
+   * Deserialize frame payload into respective IO variables.
+   * @param data_in Frame payload to deserialize from.
+   */
   void operator<<(const std::span<const Byte> data_in)
   {
     static_assert(((Binding != io::IoBinding::Cu) and (FrameID <= 127))
@@ -511,6 +702,10 @@ public:
     Assign(data_in);
   }
 
+  /**
+   * Serialize IO variables into frame payload.
+   * @param data_out Frame payload to serialize to.
+   */
   void operator>>(std::span<Byte> data_out)
   {
     static_assert(((Binding == io::IoBinding::Cu) and (FrameID <= 127))
@@ -518,13 +713,14 @@ public:
                   ((Binding != io::IoBinding::Cu) and (FrameID >= 128)));
 
     std::fill(data_out.begin(), data_out.end(), 0);
-    data_out[0] = address;
+    data_out[0] = address();
     data_out[1] = 0x83;
-    data_out[2] = id;
+    data_out[2] = id();
     Generate(data_out);
   }
-  /*!
-   * Reset the underlying I/O variables.
+
+  /**
+   * Reset underlying IO variables to 0's.
    */
   void Reset()
   {
@@ -532,22 +728,35 @@ public:
     Assign(data_in);
   }
 
-  static constexpr Byte address{Address};
-  static constexpr Byte id{FrameID};
-  static constexpr size_t bytesize{FrameByteSize};
+  [[nodiscard]] static constexpr auto address()
+  {
+    return Address;
+  };
 
-  /*!
-   * NEMA-TS2: CommandFrame ID is [0,127], ResponseFrame [128,255]
-   *
-   * CommandFrame  : 000 - 063 NEMA-TS2 Use
-   *                 064 - 127 Manufacture Use
-   *
-   * ResponseFrame:  128-191 NEMA-TS2 Use
-   *                 192-255 Manufacture Use
-   *
-   * @return FrameKind
+  [[nodiscard]] static constexpr auto id()
+  {
+    return FrameID;
+  };
+
+  [[nodiscard]] static constexpr auto byte_size()
+  {
+    return FrameByteSize;
+  };
+
+  /*
+    NEMA-TS2: CommandFrame ID is [0,127], ResponseFrame [128,255]
+
+    CommandFrame  : 000 - 063 NEMA-TS2
+                    064 - 127 Manufacture
+
+    ResponseFrame:  128-191 NEMA-TS2
+                    192-255 Manufacture
    */
-  static constexpr FrameKind kind()
+
+  /**
+   * Returns the frame kind, with value being Command or Response.
+   */
+  [[nodiscard]] static constexpr auto frame_kind()
   {
     return (FrameID <= 127) ? FrameKind::Command : FrameKind::Response;
   }
@@ -556,7 +765,7 @@ private:
   template<size_t I = 0>
   inline void Assign(const std::span<const Byte> data_in)
   {
-    if constexpr (I < sizeof...(Ts)) {
+    if constexpr (I < sizeof...(FrameElementTs)) {
       std::get<I>(frame_elements_) << data_in;
       Assign<I + 1>(data_in);
     }
@@ -565,20 +774,20 @@ private:
   template<size_t I = 0>
   inline void Generate(std::span<Byte> data_out)
   {
-    if constexpr (I < sizeof...(Ts)) {
+    if constexpr (I < sizeof...(FrameElementTs)) {
       std::get<I>(frame_elements_) >> data_out;
       Generate<I + 1>(data_out);
     }
   }
 
-  std::tuple<Ts...> frame_elements_;
+  std::tuple<FrameElementTs...> frame_elements_;
 };
 
 template<Byte Address,
          Byte FrameID,
          size_t FrameByteSize,
          io::IoBinding Binding,
-         typename... Ts>
+         typename... FrameElementTs>
 struct FrameGenerator
 {
 };
@@ -587,21 +796,28 @@ template<Byte Address,
          Byte FrameID,
          size_t FrameByteSize,
          io::IoBinding Binding,
-         typename... Ts>
-struct FrameGenerator<Address, FrameID, FrameByteSize, Binding, std::tuple<Ts...>>
+         typename... FrameElementTs>
+struct FrameGenerator<Address, FrameID, FrameByteSize, Binding, std::tuple<FrameElementTs...>>
 {
-  using type = Frame<Address, FrameID, FrameByteSize, Binding, Ts...>;
+  using type = Frame<Address, FrameID, FrameByteSize, Binding, FrameElementTs...>;
 };
 
 //-----------------------------------------------------------------
 // Detector Call Data Frame Bits Generator
 //-----------------------------------------------------------------
 
+/**
+ * A type factory for io::VehicleDetCall element in detector call data frame used in simulation.
+ * @tparam Cabinet Index of cabinet.
+ * @tparam Binding IO binding.
+ * @tparam N Index of detector channel.
+ */
 template<CabinetIndex Cabinet, io::IoBinding Binding, int N>
 struct CallDataFrameBit
 {
   using type = FrameBit<
       io::VehicleDetCall<Cabinet, Binding, N>,
+      // The first 3 bytes are Address, Control, and FrameID. The bit position definition starts at 24.
       24 + N - 1>;
 };
 
@@ -622,16 +838,26 @@ struct CallDataFrameBitGenerator<Cabinet, Binding, 0, Ts...>
   using type = std::tuple<Ts...>;
 };
 
+/* The type would be std::tuple<
+   FrameBit<VehicleDetCall<Cabinet, Binding, 128>, 151>
+   FrameBit<VehicleDetCall<Cabinet, Binding, 127>, 150>
+   FrameBit<VehicleDetCall<Cabinet, Binding, 126>, 149>
+   ...
+   FrameBit<VehicleDetCall<Cabinet, Binding, 1>, 24>
+   >
+ */
 template<CabinetIndex Cabinet, io::IoBinding Binding>
 using CallDataFrameBits = typename CallDataFrameBitGenerator<
     Cabinet,
     Binding,
     MAX_VEHICLE_DETECTORS>::type;
 
-//------------------------------------------------------------------
-// Green Channel Driver Generator
-//------------------------------------------------------------------
-
+/**
+ * A type factory for io::ChannelGreenWalkDriver element in load switch driver frame for simulation.
+ * @tparam Cabinet Index of cabinet.
+ * @tparam Binding IO binding.
+ * @tparam N Index of load switch channel.
+ */
 template<CabinetIndex Cabinet, io::IoBinding Binding, int N>
 struct GreenChannelDriverFrameBit
 {
@@ -657,16 +883,27 @@ struct GreenChannelDriverFrameBitGenerator<Cabinet, Binding, 0, Ts...>
   using type = std::tuple<Ts...>;
 };
 
+/*
+   The type would be std::tuple<
+   FrameBit<ChannelGreenWalkDriver<Cabinet, Binding, 32>, 119>
+   FrameBit<ChannelGreenWalkDriver<Cabinet, Binding, 31>, 116>
+   FrameBit<ChannelGreenWalkDriver<Cabinet, Binding, 30>, 113>
+   ...
+   FrameBit<ChannelGreenWalkDriver<Cabinet, Binding, 1>, 26>
+   >
+ */
 template<CabinetIndex Cabinet, io::IoBinding Binding>
 using GreenChannelDriverFrameBits = typename GreenChannelDriverFrameBitGenerator<
     Cabinet,
     Binding,
     MAX_LOAD_SWITCHES>::type;
 
-//------------------------------------------------------------------
-// Yellow Channel Driver Generator
-//------------------------------------------------------------------
-
+/**
+ * A type factory for io::ChannelYellowPedClearDriver element in load switch driver frame for simulation.
+ * @tparam Cabinet Index of cabinet.
+ * @tparam Binding IO binding.
+ * @tparam N Index of load switch channel.
+ */
 template<CabinetIndex Cabinet, io::IoBinding Binding, int N>
 struct YellowChannelDriverFrameBit
 {
@@ -692,16 +929,27 @@ struct YellowChannelDriverFrameBitGenerator<CuIndex, Binding, 0, Ts...>
   using type = std::tuple<Ts...>;
 };
 
+/*
+   The type would be std::tuple<
+   FrameBit<ChannelYellowPedClearDriver<Cabinet, Binding, 32>, 118>
+   FrameBit<ChannelYellowPedClearDriver<Cabinet, Binding, 31>, 115>
+   FrameBit<ChannelYellowPedClearDriver<Cabinet, Binding, 30>, 112>
+   ...
+   FrameBit<ChannelGreenWalkDriver<Cabinet, Binding, 1>, 25>
+   >
+ */
 template<CabinetIndex Cabinet, io::IoBinding Binding>
 using YellowChannelDriverFrameBits = typename YellowChannelDriverFrameBitGenerator<
     Cabinet,
     Binding,
     MAX_LOAD_SWITCHES>::type;
 
-//------------------------------------------------------------------
-// Red Channel Driver Generator
-//------------------------------------------------------------------
-
+/**
+ * A type factory for io::ChannelRedDoNotWalkDriver element in load switch driver frame for simulation.
+ * @tparam Cabinet Index of cabinet.
+ * @tparam Binding IO binding.
+ * @tparam N Index of load switch channel.
+ */
 template<CabinetIndex Cabinet, io::IoBinding Binding, int N>
 struct RedChannelDriverFrameBit
 {
@@ -727,41 +975,20 @@ struct RedChannelDriverFrameBitGenerator<Cabinet, Binding, 0, Ts...>
   using type = std::tuple<Ts...>;
 };
 
+/*
+   The type would be std::tuple<
+   FrameBit<ChannelRedDoNotWalkDriver<Cabinet, Binding, 32>, 117>
+   FrameBit<ChannelRedDoNotWalkDriver<Cabinet, Binding, 31>, 114>
+   FrameBit<ChannelRedDoNotWalkDriver<Cabinet, Binding, 30>, 111>
+   ...
+   FrameBit<ChannelRedDoNotWalkDriver<Cabinet, Binding, 1>, 24>
+   >
+ */
 template<CabinetIndex Cabinet, io::IoBinding Binding>
 using RedChannelDriverFrameBits = typename RedChannelDriverFrameBitGenerator<
     Cabinet,
     Binding,
     MAX_LOAD_SWITCHES>::type;
-
-/*!
- * A FrameType concept that enforces that type must have a static constexpr method
- * called kind().
- * @tparam T
- */
-template<typename T>
-concept FrameType = requires {
-  {
-    T::kind()
-  } -> std::same_as<FrameKind>;
-};
-
-template<typename T>
-concept CommandFrameType = requires {
-  {
-    T::kind()
-  } -> std::same_as<FrameKind>;
-
-  T::kind() == FrameKind::Command;
-};
-
-template<typename T>
-concept ResponseFrameType = requires {
-  {
-    T::kind()
-  } -> std::same_as<FrameKind>;
-
-  T::kind() == FrameKind::Response;
-};
 
 template<CommandFrameType T1, ResponseFrameType T2>
 using FrameMap = std::tuple<T1 &, T2 &>;
@@ -771,22 +998,26 @@ using FrameMaps = std::tuple<Ts...>;
 
 }// namespace detail
 
-/*!
- * A trick for creating singleton instance of a instance type.
- * @tparam T The type of the instance.
+/**
+ * Defines an instance of the given frame type.
+ * @tparam T The frame type.
  */
-template<detail::FrameType T>
+template<FrameType T>
 T instance{};
 
-/*!
- Type 64 Command Frame for Software in the Loop Simulation. It represents a command
- instance used in the initial handshake phase of a Software in the Loop (SIL) simulation.
- This instance is intended to be transmitted by the External Controller Software (ECS)
- to notify the traffic simulator that it is ready to start the simulation. It contains
- the ID of the target intersection within the simulation model, serving as a means to
- identify and establish communication between the ECS and the traffic simulator. By
- utilizing this instance, the ECS initiates the simulation process and signals its
- readiness to begin the desired traffic scenario.
+/*
+ Type 64 Command Frame for Software in the Loop Simulation. It is used in the
+ initial handshake phase, transmitted from the External Controller Software(ECS)
+ to notify the traffic simulator that the ECS is ready. The frame contains the
+ ID of the target intersection, serving as a means to identify and establish
+ communication between the ECS and the traffic simulator. By this frame, the ECS
+ initiates the simulation process and signals its readiness to begin the desired
+ traffic scenario.
+ */
+
+/**
+ * Type 64 Command Frame for establishing the communication between external
+ * controller software (ECS) and traffic simulator.
  */
 template<CabinetIndex Cabinet, io::IoBinding Binding>
   requires ValidCabinetIndex<Cabinet>
@@ -887,25 +1118,20 @@ using SimulatorLoadSwitchDriversAckFrame = detail::Frame<
 
 namespace biu {
 
-struct BiuType
-{
+template<typename T>
+concept BiuType = requires {
+  T::device_kind() == DeviceKind::Biu;
 };
 
+/**
+ * Abstract BIU type.
+ * @tparam Derived The specific BIU type. It must has frame_maps, frame_maps_size and cabinet defined.
+ */
 template<typename Derived>
-struct Biu : public SdlcStationDevice<Biu<Derived>>
+struct Biu : public SdlcSecondaryStationDevice<Biu<Derived>>
 {
 public:
-  friend class SdlcStationDevice<Biu<Derived>>;
-
-  [[nodiscard]] CabinetIndex cabinet() const final
-  {
-    return Derived::cabinet;
-  }
-
-  [[nodiscard]] SdlcStationDeviceKind sdlc_station_device_kind() const final
-  {
-    return SdlcStationDeviceKind::Biu;
-  }
+  friend class SdlcSecondaryStationDevice<Biu<Derived>>;
 
 private:
   template<size_t I = 0>
@@ -913,9 +1139,9 @@ private:
   {
     if constexpr (I < Derived::frame_maps_size) {
       auto &res_frame = std::get<1>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
-      if (res_frame.id == frame_id) {
+      if (res_frame.id() == frame_id) {
         res_frame >> this->buffer_;
-        return {true, {this->buffer_.data(), res_frame.bytesize}};
+        return {true, {this->buffer_.data(), res_frame.byte_size()}};
       } else {
         return DoGenerateResponseFrame<I + 1>(frame_id);
       }
@@ -929,7 +1155,7 @@ private:
   {
     if constexpr (I < Derived::frame_maps_size) {
       auto &cmd_frame = std::get<0>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
-      if (cmd_frame.id == data[2]) {
+      if (cmd_frame.id() == data[2]) {
         cmd_frame << data;
         return true;
       } else {
@@ -961,10 +1187,10 @@ private:
       auto &cmd_frame = std::get<0>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
       auto &res_frame = std::get<1>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
 
-      if (cmd_frame.id == data_in[2]) {
+      if (cmd_frame.id() == data_in[2]) {
         cmd_frame << data_in;
         res_frame >> this->buffer_;// Buffer will be emptied at the beginning of >>().
-        return {true, {this->buffer_.data(), res_frame.bytesize}};
+        return {true, {this->buffer_.data(), res_frame.byte_size()}};
       } else {
         return DoDispatch<I + 1>(data_in);
       }
@@ -973,84 +1199,91 @@ private:
     }
   }
 
+  [[nodiscard]] static constexpr auto get_cabinet()
+  {
+    return Derived::cabinet;
+  }
+
+  [[nodiscard]] static constexpr auto get_device_kind()
+  {
+    return DeviceKind::Biu;
+  }
+
 private:
   std::array<Byte, MAX_SDLC_FRAME_BYTES> buffer_{};
 };
 
 template<CabinetIndex Cabinet, Byte FrameID>
-struct FrameType
+struct BiuFrameType
 {
 };
 
 template<CabinetIndex Cabinet>
-struct FrameType<Cabinet, 64>
+struct BiuFrameType<Cabinet, 64>
 {
   using type = frame::SimulatorInitialHandshakeFrame<Cabinet, io::IoBinding::Fio>;
 };
 
 template<CabinetIndex Cabinet>
-struct FrameType<Cabinet, 192>
+struct BiuFrameType<Cabinet, 192>
 {
   using type = frame::SimulatorInitialHandshakeAckFrame<Cabinet, io::IoBinding::Fio>;
 };
 
 template<CabinetIndex Cabinet>
-struct FrameType<Cabinet, 65>
+struct BiuFrameType<Cabinet, 65>
 {
   using type = frame::SimulatorCallRequestFrame<Cabinet, io::IoBinding::Fio>;
 };
 
 template<CabinetIndex Cabinet>
-struct FrameType<Cabinet, 193>
+struct BiuFrameType<Cabinet, 193>
 {
   using type = frame::SimulatorCallDataFrame<Cabinet, io::IoBinding::Fio>;
 };
 
 template<CabinetIndex Cabinet>
-struct FrameType<Cabinet, 66>
+struct BiuFrameType<Cabinet, 66>
 {
   using type = frame::SimulatorLoadSwitchDriversFrame<Cabinet, io::IoBinding::Fio>;
 };
 
 template<CabinetIndex Cabinet>
-struct FrameType<Cabinet, 194>
+struct BiuFrameType<Cabinet, 194>
 {
   using type = frame::SimulatorLoadSwitchDriversAckFrame<Cabinet, io::IoBinding::Fio>;
 };
 
-template<typename T>
-  requires std::is_same_v<typename T::type, BiuType>
+template<BiuType T>
 T instance{};
 
-/*!
- * A bus interface unit for traffic simulator software such as TransModeler.
- * @tparam CuIndex Controller unit index.
+/**
+ * A BIU type  for traffic simulator such as TransModeler.
+ * @tparam Cabinet Index of the cabinet.
  */
 template<CabinetIndex Cabinet>
   requires ValidCabinetIndex<Cabinet>
 struct SimulatorBiu : public Biu<SimulatorBiu<Cabinet>>
 {
-  using type = BiuType;
-
   using SimulatorBiuFrameMaps = frame::detail::FrameMaps<
-      frame::detail::FrameMap<typename FrameType<Cabinet, 64>::type,
-                              typename FrameType<Cabinet, 192>::type>,
-      frame::detail::FrameMap<typename FrameType<Cabinet, 65>::type,
-                              typename FrameType<Cabinet, 193>::type>,
-      frame::detail::FrameMap<typename FrameType<Cabinet, 66>::type,
-                              typename FrameType<Cabinet, 194>::type>>;
+      frame::detail::FrameMap<typename BiuFrameType<Cabinet, 64>::type,
+                              typename BiuFrameType<Cabinet, 192>::type>,
+      frame::detail::FrameMap<typename BiuFrameType<Cabinet, 65>::type,
+                              typename BiuFrameType<Cabinet, 193>::type>,
+      frame::detail::FrameMap<typename BiuFrameType<Cabinet, 66>::type,
+                              typename BiuFrameType<Cabinet, 194>::type>>;
 
   const SimulatorBiuFrameMaps frame_maps{
       std::make_tuple(
-          std::make_tuple(std::ref(frame::instance<typename FrameType<Cabinet, 64>::type>),
-                          std::ref(frame::instance<typename FrameType<Cabinet, 192>::type>)),
-          std::make_tuple(std::ref(frame::instance<typename FrameType<Cabinet, 65>::type>),
-                          std::ref(frame::instance<typename FrameType<Cabinet, 193>::type>)),
-          std::make_tuple(std::ref(frame::instance<typename FrameType<Cabinet, 66>::type>),
-                          std::ref(frame::instance<typename FrameType<Cabinet, 194>::type>)))};
+          std::make_tuple(std::ref(frame::instance<typename BiuFrameType<Cabinet, 64>::type>),
+                          std::ref(frame::instance<typename BiuFrameType<Cabinet, 192>::type>)),
+          std::make_tuple(std::ref(frame::instance<typename BiuFrameType<Cabinet, 65>::type>),
+                          std::ref(frame::instance<typename BiuFrameType<Cabinet, 193>::type>)),
+          std::make_tuple(std::ref(frame::instance<typename BiuFrameType<Cabinet, 66>::type>),
+                          std::ref(frame::instance<typename BiuFrameType<Cabinet, 194>::type>)))};
 
-  constexpr static auto frame_maps_size{std::tuple_size_v<SimulatorBiuFrameMaps>};
-  constexpr static auto cabinet{Cabinet};
+  static constexpr auto frame_maps_size{std::tuple_size_v<SimulatorBiuFrameMaps>};
+  static constexpr auto cabinet{Cabinet};
 };
 
 }// namespace biu
@@ -1063,12 +1296,8 @@ auto make_wirings(Factory, std::integer_sequence<T, Is...>)
   return std::make_tuple(Factory::template make<Cabinet, Is>()...);
 }
 
-/*!
- * Provide a convenience function for enumerating the individual wiring of a list of wirings.
- * @tparam WiringsT The wirings type.
- * @tparam F The callback functor type to be applied to each subject individual wiring.
- * @param wirings
- * @param func
+/**
+ * Enumerates a list of wirings and applies the func to each wiring item.
  */
 template<typename WiringsT, typename F>
 void for_each(WiringsT &&wirings, F &&func)
@@ -1081,6 +1310,21 @@ void for_each(WiringsT &&wirings, F &&func)
 }
 
 namespace lsw {// Load Switch
+
+enum class LoadSwitchState : short
+{
+  Blank = 0,
+  Red = 1,
+  Yellow = 2,
+  Green = 3
+};
+
+template<typename T>
+concept LoadSwitchType = requires(T t) {
+  {
+    t.state()
+  } -> std::same_as<LoadSwitchState>;
+};
 
 namespace detail {
 
@@ -1105,6 +1349,9 @@ auto make_load_switch_driver()
 
 }// namespace detail
 
+/**
+ * An integer sequence of 1 .. MAX_LOAD_SWITCHES
+ */
 using LoadSwitchChannels =
     offset_sequence_t<
         0,
@@ -1112,33 +1359,13 @@ using LoadSwitchChannels =
             LoadSwitchChannel,
             MAX_LOAD_SWITCHES>>;
 
-enum class LoadSwitchState : short
+template<CabinetIndex Cabinet, LoadSwitchChannel Ch>
+  requires ValidLoadSwitchChannel<Ch> && ValidCabinetIndex<Cabinet>
+struct LoadSwitch
 {
-  Blank = 0,
-  Red = 1,
-  Yellow = 2,
-  Green = 3
-};
-
-struct AbstractLoadSwitch
-{
-public:
-  virtual ~AbstractLoadSwitch() = default;
-
-  [[nodiscard]] virtual LoadSwitchState state() const noexcept = 0;
-  [[nodiscard]] virtual LoadSwitchState operator()() const noexcept = 0;
-  virtual void set_state(LoadSwitchState value) noexcept = 0;
-
-  [[nodiscard]] virtual CabinetIndex cabinet() const noexcept = 0;
-  [[nodiscard]] virtual LoadSwitchChannel channel() const noexcept = 0;
-};
-
-template<typename Derived>
-struct LoadSwitchBase : public AbstractLoadSwitch
-{
-  [[nodiscard]] LoadSwitchState state() const noexcept final
+  [[nodiscard]] LoadSwitchState state() const noexcept
   {
-    auto &[g, y, r] = static_cast<const Derived *>(this)->driver;
+    auto &[g, y, r] = driver_;
     auto gyr_value = std::make_tuple(std::ref(g.value), std::ref(y.value), std::ref(r.value));
     LoadSwitchState result;
 
@@ -1155,14 +1382,14 @@ struct LoadSwitchBase : public AbstractLoadSwitch
     return result;
   }
 
-  [[nodiscard]] LoadSwitchState operator()() const noexcept final
+  [[nodiscard]] LoadSwitchState operator()() const noexcept
   {
     return state();
   }
 
-  void set_state(LoadSwitchState value) noexcept final
+  void set_state(LoadSwitchState value) noexcept
   {
-    auto &[g, y, r] = static_cast<const Derived *>(this)->driver;
+    auto &[g, y, r] = driver_;
     g.value = Bit::Off;
     r.value = Bit::Off;
     y.value = Bit::Off;
@@ -1185,33 +1412,25 @@ struct LoadSwitchBase : public AbstractLoadSwitch
     }
   }
 
-  [[nodiscard]] CabinetIndex cabinet() const noexcept final
+  [[nodiscard]] static constexpr auto cabinet()
   {
-    return Derived::cabinet;
-  }
+    return Cabinet;
+  };
 
-  [[nodiscard]] LoadSwitchChannel channel() const noexcept final
+  [[nodiscard]] static constexpr auto channel()
   {
-    return Derived::channel;
-  }
-};
+    return Ch;
+  };
 
-template<CabinetIndex Cabinet, LoadSwitchChannel Ch>
-  requires ValidLoadSwitchChannel<Ch> && ValidCabinetIndex<Cabinet>
-struct LoadSwitch : public LoadSwitchBase<LoadSwitch<Cabinet, Ch>>
-{
-  static constexpr auto channel{Ch};
-  static constexpr auto cabinet{Cabinet};
-  const detail::LoadSwitchDriver<Cabinet, Ch> driver{
-      detail::make_load_switch_driver<Cabinet, Ch>()};
+private:
+  const detail::LoadSwitchDriver<Cabinet, Ch> driver_{detail::make_load_switch_driver<Cabinet, Ch>()};
 };
 
 template<CabinetIndex Cabinet, LoadSwitchChannel Ch>
   requires ValidLoadSwitchChannel<Ch>
 using LoadSwitchWiring = std::tuple<LoadSwitch<Cabinet, Ch> &, SignalGroup>;
 
-template<typename T>
-  requires std::is_base_of_v<AbstractLoadSwitch, T>
+template<LoadSwitchType T>
 T instance{};
 
 struct LoadSwitchWiringFactory
@@ -1231,6 +1450,13 @@ using LoadSwitchWirings =
 
 namespace du {// detector unit
 
+template<typename T>
+concept DetectorUnitType = requires(T t) {
+  {
+    t.activated()
+  } -> std::same_as<bool>;
+};
+
 using DetectorChannels =
     offset_sequence_t<
         0,
@@ -1238,65 +1464,45 @@ using DetectorChannels =
             DetectorChannel,
             MAX_VEHICLE_DETECTORS>>;
 
-struct AbstractDetectorUnit
+template<CabinetIndex Cabinet, DetectorChannel Ch>
+  requires ValidDetectorChannel<Ch> && ValidCabinetIndex<Cabinet>
+struct DetectorUnit
 {
-public:
-  virtual ~AbstractDetectorUnit() = default;
-
-  [[nodiscard]] virtual bool activated() const noexcept = 0;
-  [[nodiscard]] virtual bool operator()() const noexcept = 0;
-  virtual void set_activated(bool value) noexcept = 0;
-
-  [[nodiscard]] virtual CabinetIndex cabinet() const noexcept = 0;
-  [[nodiscard]] virtual DetectorChannel channel() const noexcept = 0;
-};
-
-template<typename Derived>
-struct DetectorUnitBase : public AbstractDetectorUnit
-{
-  [[nodiscard]] bool activated() const noexcept final
+  [[nodiscard]] bool activated() const noexcept
   {
-    return static_cast<const Derived *>(this)->state.value == Bit::On;
+    return state_.value == Bit::On;
   }
 
-  [[nodiscard]] bool operator()() const noexcept final
+  void set_activated(bool value) noexcept
+  {
+    state_.value = value ? Bit::On : Bit::Off;
+  }
+
+  [[nodiscard]] bool operator()() const noexcept
   {
     return activated();
   }
 
-  [[nodiscard]] CabinetIndex cabinet() const noexcept final
+  [[nodiscard]] static constexpr auto cabinet()
   {
-    return Derived::cabinet;
-  }
+    return Cabinet;
+  };
 
-  [[nodiscard]] DetectorChannel channel() const noexcept final
+  [[nodiscard]] static constexpr auto channel()
   {
-    return Derived::channel;
-  }
+    return Ch;
+  };
 
-  void set_activated(bool value) noexcept final
-  {
-    static_cast<const Derived *>(this)->state.value = value ? Bit::On : Bit::Off;
-  }
-};
-
-template<CabinetIndex Cabinet, DetectorChannel Ch>
-  requires ValidDetectorChannel<Ch> && ValidCabinetIndex<Cabinet>
-struct DetectorUnit : public DetectorUnitBase<DetectorUnit<Cabinet, Ch>>
-{
-  static constexpr auto channel{Ch};
-  static constexpr auto cabinet{Cabinet};
-
+private:
   io::VehicleDetCall<Cabinet, io::IoBinding::Fio, Ch>
-      &state{io::instance<io::VehicleDetCall<Cabinet, io::IoBinding::Fio, Ch>>};
+      &state_{io::instance<io::VehicleDetCall<Cabinet, io::IoBinding::Fio, Ch>>};
 };
 
 template<CabinetIndex Cabinet, DetectorChannel Ch>
   requires ValidDetectorChannel<Ch> && ValidCabinetIndex<Cabinet>
 using DetectorWiring = std::tuple<DetectorUnit<Cabinet, Ch> &, DetectionZoneIDs>;
 
-template<typename T>
-  requires std::is_base_of_v<AbstractDetectorUnit, T>
+template<DetectorUnitType T>
 T instance{};
 
 struct DetectorWiringFactory
@@ -1319,7 +1525,7 @@ namespace xils {// X in the loop simulation, x = software/hardware
 
 struct IXilSimulator
 {
-  /*!
+  /**
    * Get controller id for the given cabinet from the simulator. This id is defined by
    * the simulator.
    * @param cabinet
@@ -1327,14 +1533,14 @@ struct IXilSimulator
    */
   virtual ControllerID GetControllerID(CabinetIndex cabinet) = 0;
 
-  /*!
+  /**
    * Retrieve sensor state, ON or OFF, of a given sensor from the simulator.
    * @param sensor_id
    * @return
    */
   virtual bool GetSensorState(DetectionZoneID sensor_id) = 0;
 
-  /*!
+  /**
    * Set signal state of a given signal in the simulator.
    * @param sg_id
    * @param approach_id
@@ -1343,10 +1549,10 @@ struct IXilSimulator
    */
   virtual void SetSignalState(SignalGroupID sg_id,
                               ApproachID approach_id,
-                              TurnID turn_id,
+                              TurnIndex turn_id,
                               aux::lsw::LoadSwitchState state) = 0;
 
-  /*!
+  /**
    * Get the mapped sensor id in the simulator for the given detector channel.
    * @param id
    * @param ch
@@ -1354,12 +1560,12 @@ struct IXilSimulator
    */
   virtual std::span<const DetectionZoneID> GetDetectionZoneIDs(ControllerID id, DetectorChannel ch) = 0;
 
-  /*!
+  /**
    * We don't want to use std::vector, so we alias a new type here.
    */
   using SignalGroupEx = std::tuple<SignalGroupID, std::span<Movement>>;
 
-  /*!
+  /**
    * Get the mapped signal group in the simulator for the given load switch channel.
    * @param id
    * @param ch
@@ -1372,15 +1578,16 @@ struct IXilSimulator
 
 namespace rack {// biu rack
 
-struct RackType
-{
+template<typename T>
+concept RackType = requires {
+  T::device_kind() == DeviceKind::Rack;
 };
 
 template<typename Derived, CabinetIndex Cabinet>
-struct Rack : public SdlcStationDevice<Rack<Derived, Cabinet>>
+struct Rack : public SdlcSecondaryStationDevice<Rack<Derived, Cabinet>>
 {
 public:
-  friend class SdlcStationDevice<Rack<Derived, Cabinet>>;
+  friend class SdlcSecondaryStationDevice<Rack<Derived, Cabinet>>;
 
   void ProcessDetectorWirings()
   {
@@ -1430,7 +1637,7 @@ public:
 
     aux::for_each(m_detector_wirings, [&](auto &&el) {
       auto &[du, zones] = el;
-      auto l_zones = m_simulator->GetDetectionZoneIDs(m_controller_id, du.channel);
+      auto l_zones = m_simulator->GetDetectionZoneIDs(m_controller_id, du.channel());
       zones.clear();
 
       for (int i = 0; i < l_zones.size(); i++) {
@@ -1443,7 +1650,7 @@ public:
       auto &[sg_id, movements] = sg;
       movements.clear();
 
-      auto [l_sg_id, l_movements] = m_simulator->GetSignalGroup(m_controller_id, lsw.channel);
+      auto [l_sg_id, l_movements] = m_simulator->GetSignalGroup(m_controller_id, lsw.channel());
       sg_id = l_sg_id;
 
       for (int i = 0; i < l_movements.size(); i++) {
@@ -1452,7 +1659,7 @@ public:
     });
   }
 
-  [[nodiscard]] CabinetIndex cabinet() const final
+  [[nodiscard]] static constexpr auto get_cabinet()
   {
     return Cabinet;
   }
@@ -1462,9 +1669,9 @@ public:
     return m_controller_id;
   }
 
-  [[nodiscard]] SdlcStationDeviceKind sdlc_station_device_kind() const final
+  [[nodiscard]] static constexpr auto get_device_kind()
   {
-    return SdlcStationDeviceKind::Rack;
+    return DeviceKind::Rack;
   }
 
 private:
@@ -1537,9 +1744,11 @@ private:
   xils::IXilSimulator *m_simulator{nullptr};
 };
 
-template<typename T>
-  requires std::is_same_v<typename T::type, RackType>
-T instance{};
+struct Object
+{
+  template<RackType T>
+  inline static T instance{};
+};
 
 template<CabinetIndex Cabinet>
 struct SimulatorBiuRack : Rack<SimulatorBiuRack<Cabinet>, Cabinet>
@@ -1547,64 +1756,13 @@ struct SimulatorBiuRack : Rack<SimulatorBiuRack<Cabinet>, Cabinet>
 public:
   friend class Rack<SimulatorBiuRack<Cabinet>, Cabinet>;
 
-  using type = RackType;
   using Bius = std::tuple<biu::SimulatorBiu<Cabinet> &>;
 
-  constexpr static auto rack_size{std::tuple_size_v<Bius>};
+  static constexpr auto rack_size{std::tuple_size_v<Bius>};
 
 private:
   const Bius m_bius{std::ref(biu::instance<biu::SimulatorBiu<Cabinet>>)};
 };
-
-/*
-
-template<CabinetIndex Cabinet>
-struct DetectorBiuRack : Rack<DetectorBiuRack<Cabinet>, Cabinet>
-{
-public:
-  friend class Rack<DetectorBiuRack<Cabinet>, Cabinet>;
-
-  using type = RackType;
-
-  using Bius = std::tuple<
-      biu::DetectorBiu<Cabinet, 1> &,
-      biu::DetectorBiu<Cabinet, 2> &,
-      biu::DetectorBiu<Cabinet, 3> &,
-      biu::DetectorBiu<Cabinet, 4> &>;
-
-  constexpr static auto rack_size{std::tuple_size_v<Bius>};
-
-private:
-  const Bius m_bius{std::ref(biu::instance<biu::DetectorBiu<Cabinet, 1>>),
-                    std::ref(biu::instance<biu::DetectorBiu<Cabinet, 2>>),
-                    std::ref(biu::instance<biu::DetectorBiu<Cabinet, 3>>),
-                    std::ref(biu::instance<biu::DetectorBiu<Cabinet, 4>>)};
-};
-
-template<CabinetIndex Cabinet>
-struct TFBiuRack : Rack<TFBiuRack<Cabinet>, Cabinet>
-{
-public:
-  friend class Rack<TFBiuRack<Cabinet>, Cabinet>;
-
-  using type = RackType;
-
-  using Bius = std::tuple<
-      biu::TFBiu<Cabinet, 1> &,
-      biu::TFBiu<Cabinet, 2> &,
-      biu::TFBiu<Cabinet, 3> &,
-      biu::TFBiu<Cabinet, 4> &>;
-
-  constexpr static auto rack_size{std::tuple_size_v<Bius>};
-
-private:
-  const Bius m_bius{std::ref(biu::instance<biu::TFBiu<Cabinet, 1>>),
-                    std::ref(biu::instance<biu::TFBiu<Cabinet, 2>>),
-                    std::ref(biu::instance<biu::TFBiu<Cabinet, 3>>),
-                    std::ref(biu::instance<biu::TFBiu<Cabinet, 4>>)};
-};
-
-*/
 
 }// namespace rack
 

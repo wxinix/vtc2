@@ -1,4 +1,4 @@
-/*!
+/**
   C++ Virtualization Library of Traffic Cabinet 2
   Copyright (c) Wuping Xin
   MPL 1.1/GPL 2.0/LGPL 2.1 tri-license
@@ -33,7 +33,7 @@ struct append_tuple<std::tuple<Ts...>, T>
 template<typename Tuple, typename T>
 using append_tuple_t = typename append_tuple<Tuple, T>::type;
 
-/*!
+/**
  * Check if a type has a constexpr static member called index.
  * @tparam T
  */
@@ -50,7 +50,7 @@ concept HasIndex = requires(T t) {
 template<size_t Offset, typename SeqType>
 struct offset_sequence;
 
-/*!
+/**
  * Offsetting a sequence by the given template argument.
  * @tparam Offset Offset value. Note 0 means offset by 1.
  * @tparam Is The sequence to be "offset".
@@ -61,13 +61,13 @@ struct offset_sequence<Offset, std::integer_sequence<T, Is...>>
   using type = std::integer_sequence<T, Is + (Offset + 1)...>;
 };
 
-/*!
+/**
  * Offset value 0 means to "offset" the sequence by 1.
  */
 template<size_t Offset, typename SeqType>
 using offset_sequence_t = typename offset_sequence<Offset, SeqType>::type;
 
-/*!
+/**
   Retrieve an element from integer sequence at compile time. For example,
 
   auto seq = std::integer_sequence<unsigned, 9, 2, 5, 1, 9, 1, 15>{};
@@ -86,7 +86,7 @@ constexpr T get(std::integer_sequence<T, Is...>, std::size_t i)
 template<size_t I, typename SeqType>
 struct add_sequence_front;
 
-/*!
+/**
  * Add a new integer to the front of an existing integer sequence.
  * @tparam I  - The integer value to be added to the front of the existing sequence.
  * @tparam Is - The integer sequence, for which the extra integer value will be added to its front.

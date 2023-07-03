@@ -1,4 +1,4 @@
-/*!
+/**
   C++ Virtualization Library of Traffic Cabinet 2
   Copyright (c) Wuping Xin
   MPL 1.1/GPL 2.0/LGPL 2.1 tri-license
@@ -16,22 +16,22 @@ namespace vtc::log {
 
 namespace fs = std::filesystem;
 
-/*!
+/**
  * Alias of a shared_ptr of spdlog::logger. Note std::shared_ptr is not thread-safe.
  */
 using Logger = std::shared_ptr<spdlog::logger>;
 
-/*!
+/**
  * Unnamed namespace for VtcLoggerHolder in order to have a global thread-safe
  * singleton logger without defining it in a separate translation unit.
  */
 namespace {
-/*!
+/**
  * Proxy class for thread-safe singleton logger.
  */
 struct LoggerHolder
 {
-  /*!
+  /**
    * Inline initialization is possible with C++17. Alternatively, we can define
    * the logger separately outside LoggerHolder class declaration but inside
    * the unnamed namespace. LoggerHolder is a member of unnamed namespace,
@@ -43,7 +43,7 @@ struct LoggerHolder
 
 }// namespace
 
-/*!
+/**
  * Thread-safe access to the singleton logger. It ought to be called only after
  * logger has been set up, i.e., setup_logger has been called; otherwise, nullptr
  * will be returned.
@@ -53,7 +53,7 @@ Logger logger()
   return LoggerHolder::logger;
 }
 
-/*!
+/**
  * Setup the logger singleton with a given output path and file name. The log file
  * will be saved to the designated output path, using the specified logger name
  * appended with "-log.txt".

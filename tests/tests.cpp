@@ -1,4 +1,4 @@
-/*!
+/**
   C++ Virtualization Library of Traffic Cabinet 2
   Copyright (c) Wuping Xin
   MPL 1.1/GPL 2.0/LGPL 2.1 tri-license
@@ -39,43 +39,43 @@ TEST_CASE("TEST_CASE - basic vtc types")
     CHECK_EQ(bit, Bit::On);
   }
 
-  SUBCASE("can use SdlcStationDeviceKind")
+  SUBCASE("can use DeviceKind")
   {
-    SdlcStationDeviceKind dk = SdlcStationDeviceKind::Mmu;
-    CHECK_EQ(dk, SdlcStationDeviceKind::Mmu);
-    dk = SdlcStationDeviceKind::Biu;
-    CHECK_EQ(dk, SdlcStationDeviceKind::Biu);
-    dk = SdlcStationDeviceKind::Cu;
-    CHECK_EQ(dk, SdlcStationDeviceKind::Cu);
-    dk = SdlcStationDeviceKind::Rack;
-    CHECK_EQ(dk, SdlcStationDeviceKind::Rack);
+    DeviceKind dk = DeviceKind::Mmu;
+    CHECK_EQ(dk, DeviceKind::Mmu);
+    dk = DeviceKind::Biu;
+    CHECK_EQ(dk, DeviceKind::Biu);
+    dk = DeviceKind::Cu;
+    CHECK_EQ(dk, DeviceKind::Cu);
+    dk = DeviceKind::Rack;
+    CHECK_EQ(dk, DeviceKind::Rack);
   }
 
   SUBCASE("can use IoBinding::Cu")
   {
-    using T = io::Variable<1, IoBinding::Cu, Cardinal, 1>;
+    using T = io::IoVariable<1, IoBinding::Cu, Cardinal, 1>;
     T var{};
     CHECK(std::is_same_v<T::value_t, Cardinal>);
-    CHECK_EQ(var.cabinet, 1);
-    CHECK_EQ(var.index, 1);
-    CHECK_EQ(var.binding, IoBinding::Cu);
+    CHECK_EQ(var.cabinet(), 1);
+    CHECK_EQ(var.index(), 1);
+    CHECK_EQ(var.binding(), IoBinding::Cu);
     CHECK_EQ(var.value, 0);
   }
 
   SUBCASE("can use IoBinding::Mmu")
   {
-    using T = io::Variable<1, IoBinding::Mmu, Cardinal, 1>;
+    using T = io::IoVariable<1, IoBinding::Mmu, Cardinal, 1>;
     T var{};
     CHECK(std::is_same_v<T::value_t, Cardinal>);
-    CHECK_EQ(var.cabinet, 1);
-    CHECK_EQ(var.index, 1);
-    CHECK_EQ(var.binding, IoBinding::Mmu);
+    CHECK_EQ(var.cabinet(), 1);
+    CHECK_EQ(var.index(), 1);
+    CHECK_EQ(var.binding(), IoBinding::Mmu);
     CHECK_EQ(var.value, 0);
   }
 
-  SUBCASE("can use VariableValueType")
+  SUBCASE("can use IoVariableValueType")
   {
-    CHECK(std::is_same_v<Bit, io::VariableValueType<VehicleDetCall<1, IoBinding::Fio, 1>>>);
+    CHECK(std::is_same_v<Bit, io::IoVariableValueType<VehicleDetCall<1, IoBinding::Fio, 1>>>);
   }
 }
 
@@ -143,8 +143,8 @@ TEST_CASE("TEST_CASE - vtc::io")
   SUBCASE("can specialize VehicleDetCall with cabinet index and detector channel")
   {
     using type = VehicleDetCall<1, IoBinding::Cu, 5>;
-    CHECK_EQ(type::cabinet, 1);
-    CHECK_EQ(type::index, 5);
+    CHECK_EQ(type::cabinet(), 1);
+    CHECK_EQ(type::index(), 5);
   }
 
   SUBCASE("will fail ValidDetectorChannel using invalid detector channel")
@@ -209,7 +209,7 @@ TEST_CASE("TEST_CASE - vtc::frame")
 {
   SUBCASE("can serialize and deserialize FrameByte")
   {
-    using var_type = io::Variable<1, IoBinding::Cu, Byte, 0>;
+    using var_type = io::IoVariable<1, IoBinding::Cu, Byte, 0>;
     frame::detail::FrameByte<var_type, 0> elem{};
     CHECK_EQ(0, elem.pos);
 
@@ -224,7 +224,7 @@ TEST_CASE("TEST_CASE - vtc::frame")
 
   SUBCASE("can serialize and deserialize FrameWord")
   {
-    using var_type = io::Variable<1, IoBinding::Cu, Word, 1>;
+    using var_type = io::IoVariable<1, IoBinding::Cu, Word, 1>;
     frame::detail::FrameWord<var_type, 1> elem{};
     CHECK_EQ(1, elem.pos);
 
@@ -239,7 +239,7 @@ TEST_CASE("TEST_CASE - vtc::frame")
 
   SUBCASE("can serialize and deserialize FrameCardinal")
   {
-    using var_type = io::Variable<1, IoBinding::Cu, Cardinal, 2>;
+    using var_type = io::IoVariable<1, IoBinding::Cu, Cardinal, 2>;
     frame::detail::FrameCardinal<var_type, 2> elem{};
     CHECK_EQ(2, elem.pos);
 
@@ -254,7 +254,7 @@ TEST_CASE("TEST_CASE - vtc::frame")
 
   SUBCASE("can serialize and deserialize FrameOctetNumber")
   {
-    using var_type = io::Variable<1, IoBinding::Cu, OctetNumber, 2>;
+    using var_type = io::IoVariable<1, IoBinding::Cu, OctetNumber, 2>;
     frame::detail::FrameOctetNumber<var_type, 2> elem{};
     CHECK_EQ(2, elem.pos);
     // Special for OctetNumber, the first data byte goes as the most significant byte
@@ -271,14 +271,14 @@ TEST_CASE("TEST_CASE - vtc::frame")
   SUBCASE("can deserialize SimulatorInitialHandshakeFrame from byte array")
   {
     // For CU = 1
-    CHECK(std::is_same_v<SimulatorInitialHandshakeFrame<1, IoBinding::Fio>, biu::FrameType<1, 64>::type>);
+    CHECK(std::is_same_v<SimulatorInitialHandshakeFrame<1, IoBinding::Fio>, biu::BiuFrameType<1, 64>::type>);
 
     SimulatorInitialHandshakeFrame<1, IoBinding::Fio> frame{};
-    CHECK_EQ(frame.bytesize, 11);
+    CHECK_EQ(frame.byte_size(), 11);
 
     std::array<Byte, 11> data_in = {254, 0x83, 64, 0x30, 0x37, 0x36, 0x31, 0x33};
     frame << data_in;
-    io::VariableValueType<IntersectionID<1, IoBinding::Fio>> value = io::instance<IntersectionID<1, IoBinding::Fio>>.value;
+    io::IoVariableValueType<IntersectionID<1, IoBinding::Fio>> value = io::instance<IntersectionID<1, IoBinding::Fio>>.value;
     CHECK_EQ(value, 0x3037363133000000);
 
     auto &int_id = io::instance<IntersectionID<1, IoBinding::Fio>>;
@@ -289,11 +289,11 @@ TEST_CASE("TEST_CASE - vtc::frame")
   SUBCASE("can serialize SimulatorCallDataFrame to byte array")
   {
     // For CU = 1
-    CHECK(std::is_same_v<SimulatorCallDataFrame<1, IoBinding::Fio>, biu::FrameType<1, 193>::type>);
+    CHECK(std::is_same_v<SimulatorCallDataFrame<1, IoBinding::Fio>, biu::BiuFrameType<1, 193>::type>);
 
     SimulatorCallDataFrame<1, IoBinding::Fio> frame{};
-    CHECK_EQ(frame.bytesize, 23);
-    CHECK_EQ(frame.kind(), frame::detail::FrameKind::Response);
+    CHECK_EQ(frame.byte_size(), 23);
+    CHECK_EQ(frame.frame_kind(), frame::FrameKind::Response);
 
     io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
     io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::Off;
@@ -323,10 +323,10 @@ TEST_CASE("TEST_CASE - vtc::frame")
   SUBCASE("can deserialize SimulatorLoadSwitchDriversFrame from byte array")
   {
     // For CU = 1
-    CHECK(std::is_same_v<SimulatorLoadSwitchDriversFrame<1, IoBinding::Fio>, biu::FrameType<1, 66>::type>);
+    CHECK(std::is_same_v<SimulatorLoadSwitchDriversFrame<1, IoBinding::Fio>, biu::BiuFrameType<1, 66>::type>);
 
     SimulatorLoadSwitchDriversFrame<1, IoBinding::Fio> frame{};
-    CHECK_EQ(frame.bytesize, 19);
+    CHECK_EQ(frame.byte_size(), 19);
 
     std::array<Byte, 19> data = {254, 0x83, 66, 0b1111'1100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     frame << data;
@@ -366,20 +366,16 @@ TEST_CASE("TEST_CASE - vtc::biu")
 {
   using namespace vtc::biu;
 
-  SUBCASE("will return SdlcStationDeviceKind::Biu with SimulatorBiu<1> instance")
+  SUBCASE("will return DeviceKind::Biu with SimulatorBiu<1> instance")
   {
     auto &sim_biu = biu::instance<SimulatorBiu<1>>;
-    CHECK(sim_biu.sdlc_station_device_kind() == SdlcStationDeviceKind::Biu);
-    AbstractSdlcStationDevice *device = &sim_biu;
-    CHECK(device->sdlc_station_device_kind() == SdlcStationDeviceKind::Biu);
+    CHECK(sim_biu.device_kind() == DeviceKind::Biu);
   }
 
   SUBCASE("can get cabinet index of SimulatorBiu<1> instance")
   {
     auto &sim_biu = biu::instance<SimulatorBiu<1>>;
     CHECK_EQ(sim_biu.cabinet, 1);
-    AbstractSdlcStationDevice *abs_biu = &sim_biu;
-    CHECK_EQ(abs_biu->cabinet(), 1);
   }
 
   SUBCASE("can get frame_maps_size of SimulatorBiu<1> instance")
@@ -391,7 +387,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
   SUBCASE("can dispatch Type 64 command frame with SimulatorBiu<1> instance")
   {
     io::instance<IntersectionID<1, IoBinding::Fio>>.value = 0;
-    AbstractSdlcStationDevice *biu = new SimulatorBiu<1>{};
+    auto *biu = new SimulatorBiu<1>{};
     std::array<Byte, 11> data_in = {254, 0x83, 64, 0x30, 0x37, 0x36, 0x31, 0x33};
 
     auto [success, data_out] = biu->Dispatch(data_in);
@@ -417,7 +413,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
     io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
     io::instance<SimulationStartTime<IoBinding::Fio>>.value = 0x64726B1B;
 
-    AbstractSdlcStationDevice *biu = new SimulatorBiu<1>{};
+    auto *biu = new SimulatorBiu<1>{};
     std::array<Byte, 3> data_in = {254, 0x83, 65};
     auto [success, data_out] = biu->Dispatch(data_in);
     CHECK(success);
@@ -446,7 +442,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
     io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
     io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
     io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
-    AbstractSdlcStationDevice *biu = new SimulatorBiu<1>{};
+    auto *biu = new SimulatorBiu<1>{};
 
     std::array<Byte, 19> data_in = {254, 0x83, 66, 0b1111'1100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     auto [success, data_out] = biu->Dispatch(data_in);
@@ -494,7 +490,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
     io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::On;
     io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
 
-    AbstractSdlcStationDevice *biu = new SimulatorBiu<1>{};
+    auto *biu = new SimulatorBiu<1>{};
     biu->Reset();
 
     CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
@@ -523,7 +519,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
 
   SUBCASE("can generate response frame Type 190 with SimulatorBiu<1> instance")
   {
-    AbstractSdlcStationDevice *biu = new SimulatorBiu<1>{};
+    auto *biu = new SimulatorBiu<1>{};
     biu->Reset();
 
     io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
@@ -548,7 +544,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
 
   SUBCASE("can process command frame with SimulatorBiu<1> instance")
   {
-    AbstractSdlcStationDevice *biu = new SimulatorBiu<1>{};
+    auto *biu = new SimulatorBiu<1>{};
     biu->Reset();
 
     CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
@@ -607,14 +603,14 @@ TEST_CASE("TEST_CASE - vtc::aux")
     auto &sg = std::get<1>(lsw_wiring);
     auto sg_id = std::get<0>(sg);
     CHECK(sg_id == 0);
-    CHECK(lsw.cabinet == 1);
-    CHECK(lsw.channel == 1);
+    CHECK(lsw.cabinet() == 1);
+    CHECK(lsw.channel() == 1);
 
     auto &det_wiring = std::get<1>(det_wirings);
     auto &det = std::get<0>(det_wiring);
     auto &sids = std::get<1>(det_wiring);
-    CHECK(det.cabinet == 1);
-    CHECK(det.channel == 2);
+    CHECK(det.cabinet() == 1);
+    CHECK(det.channel() == 2);
     CHECK(sids.empty());
   }
 
@@ -626,7 +622,7 @@ TEST_CASE("TEST_CASE - vtc::aux")
       auto &[lsw, sg] = el;
       auto &turn_movements = std::get<1>(sg);
       CHECK(turn_movements.empty());
-      if (lsw.channel % 8 == 0) {
+      if (lsw.channel() % 8 == 0) {
         lsw.set_state(lsw::LoadSwitchState::Yellow);
       } else {
         lsw.set_state(lsw::LoadSwitchState::Red);
@@ -651,7 +647,7 @@ TEST_CASE("TEST_CASE - vtc::aux")
     auto det_wirings = make_wirings<1>(du::DetectorWiringFactory{}, du::DetectorChannels{});
     for_each(det_wirings, [&](auto &&el) {
       auto &[det, sids] = el;
-      if (det.channel % 4 == 0) {
+      if (det.channel() % 4 == 0) {
         det.set_activated(true);
       } else {
         det.set_activated(false);
@@ -720,7 +716,7 @@ TEST_CASE("TEST_CASE - vtc::aux::lsw")
     io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
 
     auto &ls = lsw::instance<LoadSwitch<1, 1>>;
-    AbstractLoadSwitch *als = &ls;
+    auto *als = &ls;
 
     auto state = ls.state();
     CHECK_EQ(state, lsw::LoadSwitchState::Blank);
@@ -764,22 +760,16 @@ TEST_CASE("TEST_CASE - vtc::aux::lsw")
     CHECK_EQ(val, 32);
   }
 
-  SUBCASE("can read LoadSwitch cabinet")
+  SUBCASE("can read load switch cabinet")
   {
     auto &ls = lsw::instance<LoadSwitch<1, 1>>;
-    CHECK(ls.cabinet == 1);
-    AbstractLoadSwitch *als = &ls;
-    auto index = als->cabinet();
-    CHECK(index == 1);
+    CHECK(ls.cabinet() == 1);
   }
 
-  SUBCASE("an read LoadSwitch load_switch_channel")
+  SUBCASE("can read load switch channel")
   {
     auto &ls = lsw::instance<LoadSwitch<1, 2>>;
-    CHECK(ls.channel == 2);
-    AbstractLoadSwitch *als = &ls;
-    auto ch = als->channel();
-    CHECK(ch == 2);
+    CHECK(ls.channel() == 2);
   }
 
   SUBCASE("can create LoadSwitchWiring using LoadSwitchWiringFactory")
@@ -816,7 +806,7 @@ TEST_CASE("TEST_CASE - vtc::aux::du")
   {
     io::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value = Bit::Off;
     auto &det = du::instance<DetectorUnit<1, 1>>;
-    AbstractDetectorUnit *det_ptr = &det;
+    auto *det_ptr = &det;
     det_ptr->set_activated(true);
     CHECK(io::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value == Bit::On);
   }
@@ -824,17 +814,17 @@ TEST_CASE("TEST_CASE - vtc::aux::du")
   SUBCASE("can get cabinet index of DetectorUnit<1,2> instance")
   {
     auto &det = du::instance<DetectorUnit<1, 2>>;
-    AbstractDetectorUnit *det_ptr = &det;
+    auto *det_ptr = &det;
     CHECK(det_ptr->cabinet() == 1);
-    CHECK(det.cabinet == 1);
+    CHECK(det.cabinet() == 1);
   }
 
   SUBCASE("can get detector channel of DetectorUnit<1,2> instance")
   {
     auto &det = du::instance<DetectorUnit<1, 2>>;
-    AbstractDetectorUnit *det_ptr = &det;
+    auto *det_ptr = &det;
     CHECK(det_ptr->channel() == 2);
-    CHECK(det.channel == 2);
+    CHECK(det.channel() == 2);
   }
 
   SUBCASE("can generate channels sequence using du::DetectorChannels")
@@ -861,13 +851,13 @@ TEST_CASE("TEST_CASE - vtc::aux::du")
 TEST_CASE("TEST_CASE - vtc::rack")
 {
   using namespace vtc::rack;
-  auto &rack = rack::instance<SimulatorBiuRack<1>>;
+  auto &rack = rack::Object::instance<SimulatorBiuRack<1>>;
 
-  SUBCASE("will return SdlcStationDeviceKind::Rack with SimulatorBiuRack<1> instance")
+  SUBCASE("will return DeviceKind::Rack with SimulatorBiuRack<1> instance")
   {
-    CHECK(rack.sdlc_station_device_kind() == SdlcStationDeviceKind::Rack);
-    AbstractSdlcStationDevice *device = &rack;
-    CHECK(device->sdlc_station_device_kind() == SdlcStationDeviceKind::Rack);
+    CHECK(rack.device_kind() == DeviceKind::Rack);
+    auto *device = &rack;
+    CHECK(device->device_kind() == DeviceKind::Rack);
   }
 
   SUBCASE("can reset VehicleDetCall 1..8 calling Reset()")
@@ -925,7 +915,7 @@ TEST_CASE("TEST_CASE - vtc::rack")
   }
 }
 
-/*!
+/**
  * For testing purpose only.
  */
 class XilsTestSimulator : public vtc::xils::IXilSimulator
@@ -996,7 +986,7 @@ public:
 
   void SetSignalState(SignalGroupID sg_id,
                       ApproachID approach_id,
-                      TurnID turn_id,
+                      TurnIndex turn_id,
                       aux::lsw::LoadSwitchState state) override
   {
     auto xpath_expr = std::format(
@@ -1043,7 +1033,7 @@ public:
     SignalGroupID sg_id = std::strtoul(xml_node.attribute("id").value(), nullptr, 10);
 
     ApproachID approach_id;
-    TurnID turn_id;
+    TurnIndex turn_id;
 
     for (auto &node : xp_node.node().children("movement")) {
       approach_id = std::strtoul(node.attribute("approach").value(), nullptr, 10);
@@ -1077,7 +1067,7 @@ private:
 TEST_CASE("TEST_CASE - vtc::rack with mock simulator")
 {
   auto simulator{XilsTestSimulator(std::filesystem::current_path() / "xils.config.xml")};
-  auto &rack = vtc::rack::instance<vtc::rack::SimulatorBiuRack<1>>;
+  auto &rack = vtc::rack::Object::instance<vtc::rack::SimulatorBiuRack<1>>;
   rack.SetSimulator(&simulator);
   rack.Reset();
 
