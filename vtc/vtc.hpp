@@ -1,9 +1,3 @@
-/**
-  C++ Virtualization Library of Traffic Cabinet 2
-  Copyright (c) Wuping Xin
-  MPL 1.1/GPL 2.0/LGPL 2.1 tri-license
-*/
-
 #ifndef VIRTUAL_TRAFFIC_CABINET_H_
 #define VIRTUAL_TRAFFIC_CABINET_H_
 
@@ -376,11 +370,13 @@ struct SimpleIoVariable : IoVariable<Cabinet, Binding, ValueT, 0>
 };
 
 /**
- * Defines an instance of the given IO variable type.
- * @tparam T The type of the IO variable.
+ * Proxy class for accessing the singleton instance of each IOVariable type.
  */
-template<IoVariableType T>
-T instance{};
+struct Global
+{
+  template<IoVariableType T>
+  inline static T instance{};
+};
 
 /**
  * Vehicle detector call state.
@@ -532,7 +528,7 @@ struct FrameBit : FrameElement
   }
 
   size_t pos{BitPos};
-  T &ref_var{io::instance<T>};
+  T &ref_var{io::Global::instance<T>};
 };
 
 /**
@@ -555,7 +551,7 @@ struct FrameByte : FrameElement
   }
 
   size_t pos{BytePos};
-  T &ref_var{io::instance<T>};
+  T &ref_var{io::Global::instance<T>};
 };
 
 /**
@@ -579,7 +575,7 @@ struct FrameWord : FrameElement
   }
 
   size_t pos{BytePos};
-  T &ref_var{io::instance<T>};
+  T &ref_var{io::Global::instance<T>};
 };
 
 /**
@@ -608,7 +604,7 @@ struct FrameCardinal : FrameElement
   }
 
   size_t pos{BytePos};
-  T &ref_var{io::instance<T>};
+  T &ref_var{io::Global::instance<T>};
 };
 
 /**
@@ -639,7 +635,7 @@ struct FrameOctetNumber : FrameElement
   }
 
   size_t pos{BytePos};
-  T &ref_var{io::instance<T>};
+  T &ref_var{io::Global::instance<T>};
 };
 
 template<size_t N>
@@ -999,11 +995,13 @@ using FrameMaps = std::tuple<Ts...>;
 }// namespace detail
 
 /**
- * Defines an instance of the given frame type.
- * @tparam T The frame type.
+ * Proxy class for accessing the singleton instance of each frame type.
  */
-template<FrameType T>
-T instance{};
+struct Global
+{
+  template<FrameType T>
+  inline static T instance{};
+};
 
 /*
  Type 64 Command Frame for Software in the Loop Simulation. It is used in the
@@ -1254,8 +1252,14 @@ struct BiuFrameType<Cabinet, 194>
   using type = frame::SimulatorLoadSwitchDriversAckFrame<Cabinet, io::IoBinding::Fio>;
 };
 
-template<BiuType T>
-T instance{};
+/**
+ * Proxy class for accessing the singleton instance of each biu type.
+ */
+struct Global
+{
+  template<BiuType T>
+  inline static T instance{};
+};
 
 /**
  * A BIU type  for traffic simulator such as TransModeler.
@@ -1275,12 +1279,12 @@ struct SimulatorBiu : public Biu<SimulatorBiu<Cabinet>>
 
   const SimulatorBiuFrameMaps frame_maps{
       std::make_tuple(
-          std::make_tuple(std::ref(frame::instance<typename BiuFrameType<Cabinet, 64>::type>),
-                          std::ref(frame::instance<typename BiuFrameType<Cabinet, 192>::type>)),
-          std::make_tuple(std::ref(frame::instance<typename BiuFrameType<Cabinet, 65>::type>),
-                          std::ref(frame::instance<typename BiuFrameType<Cabinet, 193>::type>)),
-          std::make_tuple(std::ref(frame::instance<typename BiuFrameType<Cabinet, 66>::type>),
-                          std::ref(frame::instance<typename BiuFrameType<Cabinet, 194>::type>)))};
+          std::make_tuple(std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 64>::type>),
+                          std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 192>::type>)),
+          std::make_tuple(std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 65>::type>),
+                          std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 193>::type>)),
+          std::make_tuple(std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 66>::type>),
+                          std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 194>::type>)))};
 
   static constexpr auto frame_maps_size{std::tuple_size_v<SimulatorBiuFrameMaps>};
   static constexpr auto cabinet{Cabinet};
@@ -1342,9 +1346,9 @@ template<CabinetIndex Cabinet, Index Ch>
 auto make_load_switch_driver()
 {
   return std::make_tuple(
-      std::ref(instance<ChannelGreenWalkDriver<Cabinet, IoBinding::Fio, Ch>>),      /**/
-      std::ref(instance<ChannelYellowPedClearDriver<Cabinet, IoBinding::Fio, Ch>>), /**/
-      std::ref(instance<ChannelRedDoNotWalkDriver<Cabinet, IoBinding::Fio, Ch>>));  /**/
+      std::ref(Global::instance<ChannelGreenWalkDriver<Cabinet, IoBinding::Fio, Ch>>),      /**/
+      std::ref(Global::instance<ChannelYellowPedClearDriver<Cabinet, IoBinding::Fio, Ch>>), /**/
+      std::ref(Global::instance<ChannelRedDoNotWalkDriver<Cabinet, IoBinding::Fio, Ch>>));  /**/
 }
 
 }// namespace detail
@@ -1430,15 +1434,21 @@ template<CabinetIndex Cabinet, LoadSwitchChannel Ch>
   requires ValidLoadSwitchChannel<Ch>
 using LoadSwitchWiring = std::tuple<LoadSwitch<Cabinet, Ch> &, SignalGroup>;
 
-template<LoadSwitchType T>
-T instance{};
+/**
+ * Proxy class for accessing the singleton instance of each load switch.
+ */
+struct Global
+{
+  template<LoadSwitchType T>
+  inline static T instance{};
+};
 
 struct LoadSwitchWiringFactory
 {
   template<CabinetIndex Cabinet, LoadSwitchChannel Ch>
   static auto make()
   {
-    return std::make_tuple(std::ref(instance<LoadSwitch<Cabinet, Ch>>), SignalGroup{});
+    return std::make_tuple(std::ref(Global::instance<LoadSwitch<Cabinet, Ch>>), SignalGroup{});
   }
 };
 
@@ -1495,22 +1505,28 @@ struct DetectorUnit
 
 private:
   io::VehicleDetCall<Cabinet, io::IoBinding::Fio, Ch>
-      &state_{io::instance<io::VehicleDetCall<Cabinet, io::IoBinding::Fio, Ch>>};
+      &state_{io::Global::instance<io::VehicleDetCall<Cabinet, io::IoBinding::Fio, Ch>>};
 };
 
 template<CabinetIndex Cabinet, DetectorChannel Ch>
   requires ValidDetectorChannel<Ch> && ValidCabinetIndex<Cabinet>
 using DetectorWiring = std::tuple<DetectorUnit<Cabinet, Ch> &, DetectionZoneIDs>;
 
-template<DetectorUnitType T>
-T instance{};
+/**
+ * Proxy class for accessing the singleton instance of each detector unit type.
+ */
+struct Global
+{
+  template<DetectorUnitType T>
+  inline static T instance{};
+};
 
 struct DetectorWiringFactory
 {
   template<CabinetIndex Cabinet, DetectorChannel Ch>
   static auto make()
   {
-    return std::make_tuple(std::ref(instance<DetectorUnit<Cabinet, Ch>>), DetectionZoneIDs{});
+    return std::make_tuple(std::ref(Global::instance<DetectorUnit<Cabinet, Ch>>), DetectionZoneIDs{});
   }
 };
 
@@ -1523,29 +1539,33 @@ using DetectorWirings = decltype(make_wirings<Cabinet>(DetectorWiringFactory{}, 
 
 namespace xils {// X in the loop simulation, x = software/hardware
 
+/**
+ * X-in-the-Loop Simulation (XILS) interface that needs to be implemented
+ * by the simulator.
+ */
 struct IXilSimulator
 {
   /**
-   * Get controller id for the given cabinet from the simulator. This id is defined by
-   * the simulator.
-   * @param cabinet
-   * @return
+   * Gets the controller id for the given cabinet from the simulator. This id is
+   * defined by the simulator.
+   * @param cabinet Index of the cabinet.
    */
   virtual ControllerID GetControllerID(CabinetIndex cabinet) = 0;
 
   /**
-   * Retrieve sensor state, ON or OFF, of a given sensor from the simulator.
-   * @param sensor_id
-   * @return
+   * Gets sensor state, which can be ON or OFF, of a given sensor from the simulator.
+   * @param sensor_id ID of the sensor defined by the simulator.
    */
   virtual bool GetSensorState(DetectionZoneID sensor_id) = 0;
 
   /**
-   * Set signal state of a given signal in the simulator.
-   * @param sg_id
-   * @param approach_id
-   * @param turn_id
-   * @param state
+   * Sets signal state of a given signal in the simulator. The signal can be either
+   * identified by signal group ID, or by the combination of approach ID and turn
+   * ID. Some simulator implementation uses signal group ID, some the other way.
+   * @param sg_id ID of the signal group in the simulation model.
+   * @param approach_id ID of the approach in the simulation model.
+   * @param turn_id ID of the turn movement in the simulation model.
+   * @param state Signal state to set.
    */
   virtual void SetSignalState(SignalGroupID sg_id,
                               ApproachID approach_id,
@@ -1553,23 +1573,28 @@ struct IXilSimulator
                               aux::lsw::LoadSwitchState state) = 0;
 
   /**
-   * Get the mapped sensor id in the simulator for the given detector channel.
-   * @param id
-   * @param ch
-   * @return
+   * Gets the list of sensor IDs in the simulation model associated with the given
+   * detector channel.
+   * @param id ID of the controller in the simulation model.
+   * @param ch ID of the detector channel.
    */
   virtual std::span<const DetectionZoneID> GetDetectionZoneIDs(ControllerID id, DetectorChannel ch) = 0;
 
   /**
-   * We don't want to use std::vector, so we alias a new type here.
+   * A signal group refers to a specific movement or set of movements of vehicles
+   * at an intersection that can be controlled by a load switch output. This class
+   * includes a tuple of SignalGroupID and the associated list of movements.
+   * @remarks Note the difference from SignalGroup defined as
+   * std::tuple<SignalGroupID,vector<Movement>>, and the use of std::span here for
+   * better memory management.
    */
   using SignalGroupEx = std::tuple<SignalGroupID, std::span<Movement>>;
 
   /**
-   * Get the mapped signal group in the simulator for the given load switch channel.
-   * @param id
-   * @param ch
-   * @return
+   * Gets signal group (if defined) and turn movements defined in the simulation model
+   * that is associated with the given load switch channel.
+   * @param id ID of the controller in the simulation model.
+   * @param ch ID of the load switch channel.
    */
   virtual SignalGroupEx GetSignalGroup(ControllerID id, LoadSwitchChannel ch) = 0;
 };
@@ -1589,55 +1614,69 @@ struct Rack : public SdlcSecondaryStationDevice<Rack<Derived, Cabinet>>
 public:
   friend class SdlcSecondaryStationDevice<Rack<Derived, Cabinet>>;
 
+  /**
+   * Processes detector unit wirings. This involves obtaining detector states
+   * from simulation model and sets the states to the detector unit channel.
+   */
   void ProcessDetectorWirings()
   {
-    if (not m_simulator)
+    if (not simulator_)
       return;
 
-    aux::for_each(m_detector_wirings, [&](auto &&el) {
+    aux::for_each(du_wirings_, [&](auto &&el) {
       auto &[detector, sensor_ids] = el;
       bool value = false;
 
       if (!sensor_ids.empty()) {
         for (const auto sensor_id : sensor_ids) {
-          value = value or m_simulator->GetSensorState(sensor_id);
+          value = value or simulator_->GetSensorState(sensor_id);
         }
         detector.set_activated(value);
       }
     });
   }
 
+  /**
+   * Processes load switch wirings. This involves obtaining load switch driver
+   * states and sets the states to signals in the simulation model.
+   */
   void ProcessLoadSwitchWirings()
   {
-    if (not m_simulator)
+    if (not simulator_)
       return;
 
-    aux::for_each(m_load_switch_wirings, [&](auto &&el) {
+    aux::for_each(lsw_wirings_, [&](auto &&el) {
       auto &[lsw, sg] = el;
       auto &[sg_id, movements] = sg;
 
       if (not movements.empty()) {
         for (const auto &movement : movements) {
           const auto &[approach, turn] = movement;
-          m_simulator->SetSignalState(0, approach, turn, lsw.state());
+          simulator_->SetSignalState(0, approach, turn, lsw.state());
         }
       } else if (sg_id > 0) {
-        m_simulator->SetSignalState(sg_id, 0, 0, lsw.state());
+        simulator_->SetSignalState(sg_id, 0, 0, lsw.state());
       }
     });
   }
 
-  void SetSimulator(xils::IXilSimulator *simulator)
+  /**
+   * Sets the simulator interface to this rack instance. This will sets up the
+   * detector unit channel mapping and load switch channel mapping between the
+   * external controller software and the traffic simulator.
+   * @param a_simulator The simulator interface; must be not null.
+   */
+  void SetSimulator(xils::IXilSimulator *a_simulator)
   {
-    if (not simulator)
-      throw std::runtime_error("Null pointer encountered while calling SimulatorBiuRack::SetSimulator.");
+    if (not a_simulator)
+      throw std::runtime_error("NRE while calling Rack::SetSimulator.");
 
-    m_simulator = simulator;
-    m_controller_id = simulator->GetControllerID(Cabinet);
-
-    aux::for_each(m_detector_wirings, [&](auto &&el) {
+    simulator_ = a_simulator;
+    controller_id_ = a_simulator->GetControllerID(this->cabinet());
+    // Set up the simulation sensor ids and detector unit channel mapping.
+    aux::for_each(du_wirings_, [&](auto &&el) {
       auto &[du, zones] = el;
-      auto l_zones = m_simulator->GetDetectionZoneIDs(m_controller_id, du.channel());
+      auto l_zones = simulator_->GetDetectionZoneIDs(controller_id_, du.channel());
       zones.clear();
 
       for (int i = 0; i < l_zones.size(); i++) {
@@ -1645,28 +1684,31 @@ public:
       }
     });
 
-    aux::for_each(m_load_switch_wirings, [&](auto &&el) {
+    // Set up simulation signals and load switch channel mapping.
+    aux::for_each(lsw_wirings_, [&](auto &&el) {
       auto &[lsw, sg] = el;
       auto &[sg_id, movements] = sg;
       movements.clear();
 
-      auto [l_sg_id, l_movements] = m_simulator->GetSignalGroup(m_controller_id, lsw.channel());
+      auto [l_sg_id, l_movements] = simulator_->GetSignalGroup(controller_id_, lsw.channel());
+      // Set signal group id based on simulator returns.
       sg_id = l_sg_id;
-
+      // Set movements.
       for (int i = 0; i < l_movements.size(); i++) {
         movements.push_back(l_movements[i]);
       }
     });
   }
 
+  [[nodiscard]] ControllerID controller_id() const
+  {
+    return controller_id_;
+  }
+
+private:
   [[nodiscard]] static constexpr auto get_cabinet()
   {
     return Cabinet;
-  }
-
-  [[nodiscard]] ControllerID controller_id() const
-  {
-    return m_controller_id;
   }
 
   [[nodiscard]] static constexpr auto get_device_kind()
@@ -1674,12 +1716,11 @@ public:
     return DeviceKind::Rack;
   }
 
-private:
   template<size_t I = 0>
   std::tuple<bool, std::span<const Byte>> DoGenerateResponseFrame(Byte frame_id)
   {
     if constexpr (I < Derived::rack_size) {
-      auto &biu = std::get<I>(static_cast<Derived *>(this)->m_bius);
+      auto &biu = std::get<I>(static_cast<Derived *>(this)->bius_);
       auto result = biu.GenerateResponseFrame(frame_id);
 
       if (std::get<0>(result)) {
@@ -1696,7 +1737,7 @@ private:
   bool DoProcessCommandFrame(const std::span<const Byte> data)
   {
     if constexpr (I < Derived::rack_size) {
-      auto &biu = std::get<I>(static_cast<Derived *>(this)->m_bius);
+      auto &biu = std::get<I>(static_cast<Derived *>(this)->bius_);
       return biu.ProcessCommandFrame(data) || DoProcessCommandFrame<I + 1>(data);
     } else {
       return false;
@@ -1707,7 +1748,7 @@ private:
   void DoReset()
   {
     if constexpr (I < Derived::rack_size) {
-      auto &biu = std::get<I>(static_cast<Derived *>(this)->m_bius);
+      auto &biu = std::get<I>(static_cast<Derived *>(this)->bius_);
       return biu.Reset(), DoReset<I + 1>();
     } else {
       return;
@@ -1718,7 +1759,7 @@ private:
   std::tuple<bool, std::span<const Byte>> DoDispatch(std::span<const Byte> data)
   {
     if constexpr (I < Derived::rack_size) {
-      auto &biu = std::get<I>(static_cast<Derived *>(this)->m_bius);
+      auto &biu = std::get<I>(static_cast<Derived *>(this)->bius_);
       auto result = biu.Dispatch(data);
       if (std::get<0>(result)) {
         return result;
@@ -1731,20 +1772,23 @@ private:
   }
 
 private:
-  aux::lsw::LoadSwitchWirings<Cabinet> m_load_switch_wirings{
+  aux::lsw::LoadSwitchWirings<Cabinet> lsw_wirings_{
       aux::make_wirings<Cabinet>(aux::lsw::LoadSwitchWiringFactory{},
                                  aux::lsw::LoadSwitchChannels{})};
 
-  aux::du::DetectorWirings<Cabinet> m_detector_wirings{
+  aux::du::DetectorWirings<Cabinet> du_wirings_{
       aux::make_wirings<Cabinet>(aux::du::DetectorWiringFactory{},
                                  aux::du::DetectorChannels{})};
 
-  ControllerID m_controller_id{0};
+  ControllerID controller_id_{0};
 
-  xils::IXilSimulator *m_simulator{nullptr};
+  xils::IXilSimulator *simulator_{nullptr};
 };
 
-struct Object
+/**
+ * Proxy class for accessing the singleton instance of each rack type.
+ */
+struct Global
 {
   template<RackType T>
   inline static T instance{};
@@ -1761,7 +1805,7 @@ public:
   static constexpr auto rack_size{std::tuple_size_v<Bius>};
 
 private:
-  const Bius m_bius{std::ref(biu::instance<biu::SimulatorBiu<Cabinet>>)};
+  const Bius bius_{std::ref(biu::Global::instance<biu::SimulatorBiu<Cabinet>>)};
 };
 
 }// namespace rack

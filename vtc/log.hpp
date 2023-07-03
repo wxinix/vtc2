@@ -1,9 +1,3 @@
-/**
-  C++ Virtualization Library of Traffic Cabinet 2
-  Copyright (c) Wuping Xin
-  MPL 1.1/GPL 2.0/LGPL 2.1 tri-license
-*/
-
 #ifndef VIRTUAL_TRAFFIC_CABINET_LOG_H_
 #define VIRTUAL_TRAFFIC_CABINET_LOG_H_
 

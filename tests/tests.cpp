@@ -1,9 +1,3 @@
-/**
-  C++ Virtualization Library of Traffic Cabinet 2
-  Copyright (c) Wuping Xin
-  MPL 1.1/GPL 2.0/LGPL 2.1 tri-license
-*/
-
 #pragma warning(disable : 4068)
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
@@ -154,37 +148,37 @@ TEST_CASE("TEST_CASE - vtc::io")
 
   SUBCASE("can read and write SimulationStartTime")
   {
-    io::instance<SimulationStartTime<IoBinding::Cu>>.value = 1682724403;// Friday, April 28, 2023 11:26:43 PM
-    io::instance<SimulationStartTime<IoBinding::Mmu>>.value = 1;
-    CHECK_EQ(io::instance<SimulationStartTime<IoBinding::Cu>>.value, 1682724403);
-    CHECK_EQ(io::instance<SimulationStartTime<IoBinding::Mmu>>.value, 1);
+    io::Global::instance<SimulationStartTime<IoBinding::Cu>>.value = 1682724403;// Friday, April 28, 2023 11:26:43 PM
+    io::Global::instance<SimulationStartTime<IoBinding::Mmu>>.value = 1;
+    CHECK_EQ(io::Global::instance<SimulationStartTime<IoBinding::Cu>>.value, 1682724403);
+    CHECK_EQ(io::Global::instance<SimulationStartTime<IoBinding::Mmu>>.value, 1);
   }
 
   SUBCASE("can read and write ChannelRedDoNotWalkDriver")
   {
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Cu, 5>>.value = Bit::On;
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Cu, 5>>.value, Bit::On);
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Cu, 5>>.value = Bit::On;
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Cu, 5>>.value, Bit::On);
 
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Cu, 5>>.value = Bit::Off;
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Cu, 5>>.value, Bit::Off);
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Cu, 5>>.value = Bit::Off;
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Cu, 5>>.value, Bit::Off);
   }
 
   SUBCASE("can read and write ChannelYellowPedClearDriver")
   {
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Cu, 5>>.value = Bit::On;
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Cu, 5>>.value, Bit::On);
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Cu, 5>>.value = Bit::On;
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Cu, 5>>.value, Bit::On);
 
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Cu, 5>>.value = Bit::Off;
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Cu, 5>>.value, Bit::Off);
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Cu, 5>>.value = Bit::Off;
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Cu, 5>>.value, Bit::Off);
   }
 
   SUBCASE("can read and write ChannelGreenWalkDriver")
   {
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Cu, 5>>.value = Bit::On;
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Cu, 5>>.value, Bit::On);
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Cu, 5>>.value = Bit::On;
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Cu, 5>>.value, Bit::On);
 
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Cu, 5>>.value = Bit::Off;
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Cu, 5>>.value, Bit::Off);
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Cu, 5>>.value = Bit::Off;
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Cu, 5>>.value, Bit::Off);
   }
 
   SUBCASE("can assign octets to IntersectionID instance")
@@ -215,9 +209,9 @@ TEST_CASE("TEST_CASE - vtc::frame")
 
     std::array<Byte, 5> data = {0x13, 0x02, 0x03, 0x04, 0x05};
     elem << data;
-    CHECK_EQ(io::instance<var_type>.value, 0x13);
+    CHECK_EQ(io::Global::instance<var_type>.value, 0x13);
 
-    io::instance<var_type>.value = 0x14;
+    io::Global::instance<var_type>.value = 0x14;
     elem >> data;
     CHECK_EQ(data[0], 0x14);
   }
@@ -230,9 +224,9 @@ TEST_CASE("TEST_CASE - vtc::frame")
 
     std::array<Byte, 5> data = {0x13, 0x02, 0x03, 0x04, 0x05};
     elem << data;
-    CHECK_EQ(io::instance<var_type>.value, 0x0302);
+    CHECK_EQ(io::Global::instance<var_type>.value, 0x0302);
 
-    io::instance<var_type>.value = 0x0A0C;
+    io::Global::instance<var_type>.value = 0x0A0C;
     elem >> data;
     CHECK_EQ(data[1], 0x0C);
   }
@@ -245,9 +239,9 @@ TEST_CASE("TEST_CASE - vtc::frame")
 
     std::array<Byte, 6> data = {0x13, 0x02, 0x03, 0x04, 0x05, 0x06};
     elem << data;
-    CHECK_EQ(io::instance<var_type>.value, 0x06050403);
+    CHECK_EQ(io::Global::instance<var_type>.value, 0x06050403);
 
-    io::instance<var_type>.value = 0x0A0B0C0D;
+    io::Global::instance<var_type>.value = 0x0A0B0C0D;
     elem >> data;
     CHECK_EQ(data[2], 0x0D);
   }
@@ -261,9 +255,9 @@ TEST_CASE("TEST_CASE - vtc::frame")
     // of the 8-byte integer.
     std::array<Byte, 10> data = {0x13, 0x02, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x00};
     elem << data;
-    CHECK_EQ(io::instance<var_type>.value, 0x3334353637383900);
+    CHECK_EQ(io::Global::instance<var_type>.value, 0x3334353637383900);
 
-    io::instance<var_type>.value = 0x3934353637383900;
+    io::Global::instance<var_type>.value = 0x3934353637383900;
     elem >> data;
     CHECK_EQ(data[2], 0x39);
   }
@@ -278,10 +272,10 @@ TEST_CASE("TEST_CASE - vtc::frame")
 
     std::array<Byte, 11> data_in = {254, 0x83, 64, 0x30, 0x37, 0x36, 0x31, 0x33};
     frame << data_in;
-    io::IoVariableValueType<IntersectionID<1, IoBinding::Fio>> value = io::instance<IntersectionID<1, IoBinding::Fio>>.value;
+    io::IoVariableValueType<IntersectionID<1, IoBinding::Fio>> value = io::Global::instance<IntersectionID<1, IoBinding::Fio>>.value;
     CHECK_EQ(value, 0x3037363133000000);
 
-    auto &int_id = io::instance<IntersectionID<1, IoBinding::Fio>>;
+    auto &int_id = io::Global::instance<IntersectionID<1, IoBinding::Fio>>;
     uint32_t int32_value = int_id.to_uint32();
     CHECK_EQ(int32_value, 7613);
   }
@@ -295,18 +289,18 @@ TEST_CASE("TEST_CASE - vtc::frame")
     CHECK_EQ(frame.byte_size(), 23);
     CHECK_EQ(frame.frame_kind(), frame::FrameKind::Response);
 
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
 
     // const auto now = std::chrono::system_clock::now();
     // instance<SimulationStartTime>.value = now.time_since_epoch().count();
-    io::instance<SimulationStartTime<IoBinding::Fio>>.value = 0x64726B1B;
+    io::Global::instance<SimulationStartTime<IoBinding::Fio>>.value = 0x64726B1B;
 
     std::array<Byte, 23> data = {};
     frame >> data;
@@ -331,17 +325,17 @@ TEST_CASE("TEST_CASE - vtc::frame")
     std::array<Byte, 19> data = {254, 0x83, 66, 0b1111'1100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     frame << data;
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::On);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
   }
 }
 
@@ -368,13 +362,13 @@ TEST_CASE("TEST_CASE - vtc::biu")
 
   SUBCASE("will return DeviceKind::Biu with SimulatorBiu<1> instance")
   {
-    auto &sim_biu = biu::instance<SimulatorBiu<1>>;
+    auto &sim_biu = biu::Global::instance<SimulatorBiu<1>>;
     CHECK(sim_biu.device_kind() == DeviceKind::Biu);
   }
 
   SUBCASE("can get cabinet index of SimulatorBiu<1> instance")
   {
-    auto &sim_biu = biu::instance<SimulatorBiu<1>>;
+    auto &sim_biu = biu::Global::instance<SimulatorBiu<1>>;
     CHECK_EQ(sim_biu.cabinet, 1);
   }
 
@@ -386,7 +380,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
 
   SUBCASE("can dispatch Type 64 command frame with SimulatorBiu<1> instance")
   {
-    io::instance<IntersectionID<1, IoBinding::Fio>>.value = 0;
+    io::Global::instance<IntersectionID<1, IoBinding::Fio>>.value = 0;
     auto *biu = new SimulatorBiu<1>{};
     std::array<Byte, 11> data_in = {254, 0x83, 64, 0x30, 0x37, 0x36, 0x31, 0x33};
 
@@ -396,22 +390,22 @@ TEST_CASE("TEST_CASE - vtc::biu")
     CHECK_EQ(data_out[0], 254);
     CHECK_EQ(data_out[1], 0x83);
     CHECK_EQ(data_out[2], 192);
-    CHECK_EQ(io::instance<IntersectionID<1, IoBinding::Fio>>.to_uint32(), 7613);
+    CHECK_EQ(io::Global::instance<IntersectionID<1, IoBinding::Fio>>.to_uint32(), 7613);
 
     delete biu;
   }
 
   SUBCASE("can dispatch Type 65 command frame with SimulatorBiu<1> instance")
   {
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
-    io::instance<SimulationStartTime<IoBinding::Fio>>.value = 0x64726B1B;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
+    io::Global::instance<SimulationStartTime<IoBinding::Fio>>.value = 0x64726B1B;
 
     auto *biu = new SimulatorBiu<1>{};
     std::array<Byte, 3> data_in = {254, 0x83, 65};
@@ -431,17 +425,17 @@ TEST_CASE("TEST_CASE - vtc::biu")
 
   SUBCASE("can dispatch Type 66 command frame with SimulatorBiu<1> instance")
   {
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
 
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value = Bit::Off;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value = Bit::Off;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value = Bit::Off;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value = Bit::Off;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value = Bit::Off;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value = Bit::Off;
 
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
     auto *biu = new SimulatorBiu<1>{};
 
     std::array<Byte, 19> data_in = {254, 0x83, 66, 0b1111'1100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -453,66 +447,66 @@ TEST_CASE("TEST_CASE - vtc::biu")
     CHECK_EQ(data_out[1], 0x83);
     CHECK_EQ(data_out[2], 194);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::On);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
     delete biu;
   }
 
   SUBCASE("can reset I/O variables with SimulatorBiu<1> instance")
   {
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
 
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value = Bit::On;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value = Bit::On;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value = Bit::On;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value = Bit::On;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value = Bit::On;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value = Bit::On;
 
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::On;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value = Bit::On;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::On;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::On;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value = Bit::On;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::On;
 
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
 
     auto *biu = new SimulatorBiu<1>{};
     biu->Reset();
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
 
-    CHECK_EQ(io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value, Bit::Off);
-    CHECK_EQ(io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value, Bit::Off);
-    CHECK_EQ(io::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value, Bit::Off);
-    CHECK_EQ(io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value, Bit::Off);
-    CHECK_EQ(io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value, Bit::Off);
-    CHECK_EQ(io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value, Bit::Off);
-    CHECK_EQ(io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value, Bit::Off);
 
     delete biu;
   }
@@ -522,14 +516,14 @@ TEST_CASE("TEST_CASE - vtc::biu")
     auto *biu = new SimulatorBiu<1>{};
     biu->Reset();
 
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
 
     auto [success, bytes] = biu->GenerateResponseFrame(190);
     CHECK(not success);
@@ -547,17 +541,17 @@ TEST_CASE("TEST_CASE - vtc::biu")
     auto *biu = new SimulatorBiu<1>{};
     biu->Reset();
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
 
     std::array<Byte, 19> bad_data_in = {254, 0x83, 60, 0b1111'1100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     auto success = biu->ProcessCommandFrame(bad_data_in);
@@ -567,17 +561,17 @@ TEST_CASE("TEST_CASE - vtc::biu")
     success = biu->ProcessCommandFrame(good_data_in);
     CHECK(success);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::On);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
 
     delete biu;
   }
@@ -629,17 +623,17 @@ TEST_CASE("TEST_CASE - vtc::aux")
       }
     });
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 16>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 16>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 16>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 16>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 16>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 16>>.value, Bit::Off);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 2>>.value, Bit::Off);
 
-    CHECK_EQ(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 31>>.value, Bit::On);
-    CHECK_EQ(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 31>>.value, Bit::Off);
-    CHECK_EQ(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 31>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 31>>.value, Bit::On);
+    CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 31>>.value, Bit::Off);
+    CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 31>>.value, Bit::Off);
   }
 
   SUBCASE("can call for_each on detector wirings")
@@ -654,14 +648,14 @@ TEST_CASE("TEST_CASE - vtc::aux")
       }
     });
 
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value == Bit::On);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value == Bit::On);
   }
 }
 
@@ -672,38 +666,38 @@ TEST_CASE("TEST_CASE - vtc::aux::lsw")
 
   SUBCASE("can read LoadSwitch state")
   {
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
 
-    auto &ls = lsw::instance<LoadSwitch<1, 1>>;
+    auto &ls = lsw::Global::instance<LoadSwitch<1, 1>>;
     auto state = ls.state();
     CHECK_EQ(state, lsw::LoadSwitchState::Blank);
 
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
 
     state = ls.state();
     CHECK_EQ(state, LoadSwitchState::Red);
 
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
 
     state = ls.state();
     CHECK_EQ(state, LoadSwitchState::Yellow);
 
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
 
     state = ls.state();
     CHECK_EQ(state, LoadSwitchState::Green);
 
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
 
     state = ls.state();
     CHECK_EQ(state, LoadSwitchState::Blank);
@@ -711,41 +705,41 @@ TEST_CASE("TEST_CASE - vtc::aux::lsw")
 
   SUBCASE("can write LoadSwitch state")
   {
-    io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
-    io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
+    io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
 
-    auto &ls = lsw::instance<LoadSwitch<1, 1>>;
+    auto &ls = lsw::Global::instance<LoadSwitch<1, 1>>;
     auto *als = &ls;
 
     auto state = ls.state();
     CHECK_EQ(state, lsw::LoadSwitchState::Blank);
 
     als->set_state(LoadSwitchState::Red);
-    CHECK(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::On);
-    CHECK(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::On);
+    CHECK(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
     state = ls.state();
     CHECK_EQ(state, LoadSwitchState::Red);
 
     ls.set_state(LoadSwitchState::Yellow);
-    CHECK(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::On);
-    CHECK(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::On);
+    CHECK(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
     state = ls.state();
     CHECK_EQ(state, LoadSwitchState::Yellow);
 
     ls.set_state(LoadSwitchState::Green);
-    CHECK(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::On);
+    CHECK(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::On);
     state = ls.state();
     CHECK_EQ(state, LoadSwitchState::Green);
 
     ls.set_state(LoadSwitchState::Blank);
-    CHECK(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
     state = ls.state();
     CHECK_EQ(state, LoadSwitchState::Blank);
   }
@@ -762,13 +756,13 @@ TEST_CASE("TEST_CASE - vtc::aux::lsw")
 
   SUBCASE("can read load switch cabinet")
   {
-    auto &ls = lsw::instance<LoadSwitch<1, 1>>;
+    auto &ls = lsw::Global::instance<LoadSwitch<1, 1>>;
     CHECK(ls.cabinet() == 1);
   }
 
   SUBCASE("can read load switch channel")
   {
-    auto &ls = lsw::instance<LoadSwitch<1, 2>>;
+    auto &ls = lsw::Global::instance<LoadSwitch<1, 2>>;
     CHECK(ls.channel() == 2);
   }
 
@@ -777,10 +771,10 @@ TEST_CASE("TEST_CASE - vtc::aux::lsw")
     LoadSwitchWiring<1, 1> wiring = LoadSwitchWiringFactory::make<1, 1>();
     auto &ls = std::get<0>(wiring);
     ls.set_state(LoadSwitchState::Green);
-    CHECK(io::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::On);
-    auto state = lsw::instance<LoadSwitch<1, 1>>.state();
+    CHECK(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 1>>.value == Bit::On);
+    auto state = lsw::Global::instance<LoadSwitch<1, 1>>.state();
     CHECK_EQ(state, LoadSwitchState::Green);
   }
 }
@@ -792,28 +786,28 @@ TEST_CASE("TEST_CASE - vtc::aux::du")
 
   SUBCASE("can get activation state of DetectorUnit<1,1> instance")
   {
-    io::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value = Bit::Off;
-    auto &det = du::instance<DetectorUnit<1, 1>>;
+    io::Global::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value = Bit::Off;
+    auto &det = du::Global::instance<DetectorUnit<1, 1>>;
     auto activated = det.activated();
     CHECK(activated == false);
 
-    io::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value = Bit::On;
     activated = det.activated();
     CHECK(activated == true);
   }
 
   SUBCASE("can set true to activation state of DetectorUnit<1,1> instance")
   {
-    io::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value = Bit::Off;
-    auto &det = du::instance<DetectorUnit<1, 1>>;
+    io::Global::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value = Bit::Off;
+    auto &det = du::Global::instance<DetectorUnit<1, 1>>;
     auto *det_ptr = &det;
     det_ptr->set_activated(true);
-    CHECK(io::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, io::IoBinding::Fio, 1>>.value == Bit::On);
   }
 
   SUBCASE("can get cabinet index of DetectorUnit<1,2> instance")
   {
-    auto &det = du::instance<DetectorUnit<1, 2>>;
+    auto &det = du::Global::instance<DetectorUnit<1, 2>>;
     auto *det_ptr = &det;
     CHECK(det_ptr->cabinet() == 1);
     CHECK(det.cabinet() == 1);
@@ -821,7 +815,7 @@ TEST_CASE("TEST_CASE - vtc::aux::du")
 
   SUBCASE("can get detector channel of DetectorUnit<1,2> instance")
   {
-    auto &det = du::instance<DetectorUnit<1, 2>>;
+    auto &det = du::Global::instance<DetectorUnit<1, 2>>;
     auto *det_ptr = &det;
     CHECK(det_ptr->channel() == 2);
     CHECK(det.channel() == 2);
@@ -842,16 +836,16 @@ TEST_CASE("TEST_CASE - vtc::aux::du")
     DetectorWiring<1, 1> wiring = DetectorWiringFactory::make<1, 1>();
     auto &det = std::get<0>(wiring);
     det.set_activated(false);
-    CHECK(io::instance<io::VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<io::VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::Off);
     det.set_activated(true);
-    CHECK(io::instance<io::VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::On);
+    CHECK(io::Global::instance<io::VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::On);
   }
 }
 
 TEST_CASE("TEST_CASE - vtc::rack")
 {
   using namespace vtc::rack;
-  auto &rack = rack::Object::instance<SimulatorBiuRack<1>>;
+  auto &rack = rack::Global::Global::instance<SimulatorBiuRack<1>>;
 
   SUBCASE("will return DeviceKind::Rack with SimulatorBiuRack<1> instance")
   {
@@ -862,39 +856,39 @@ TEST_CASE("TEST_CASE - vtc::rack")
 
   SUBCASE("can reset VehicleDetCall 1..8 calling Reset()")
   {
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
 
     rack.Reset();
 
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value == Bit::Off);
   }
 
   SUBCASE("will generate Frame 193 calling GenerateResponseFrame with arg 193")
   {
     rack.Reset();
 
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
-    io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 4>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value = Bit::On;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::Off;
+    io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
 
     auto [success, frame_data] = rack.GenerateResponseFrame(193);
 
@@ -1067,7 +1061,7 @@ private:
 TEST_CASE("TEST_CASE - vtc::rack with mock simulator")
 {
   auto simulator{XilsTestSimulator(std::filesystem::current_path() / "xils.config.xml")};
-  auto &rack = vtc::rack::Object::instance<vtc::rack::SimulatorBiuRack<1>>;
+  auto &rack = vtc::rack::Global::Global::instance<vtc::rack::SimulatorBiuRack<1>>;
   rack.SetSimulator(&simulator);
   rack.Reset();
 
@@ -1108,26 +1102,26 @@ TEST_CASE("TEST_CASE - vtc::rack with mock simulator")
   {
     rack.ProcessDetectorWirings();
 
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::On);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value == Bit::On);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value == Bit::On);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value == Bit::On);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value == Bit::On);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value == Bit::On);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value == Bit::On);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 9>>.value == Bit::On);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 10>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 11>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 12>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 13>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 14>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 15>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 16>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 17>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 18>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 19>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 20>>.value == Bit::Off);
-    CHECK(io::instance<VehicleDetCall<1, IoBinding::Fio, 21>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 3>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 5>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 9>>.value == Bit::On);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 10>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 11>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 12>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 13>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 14>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 15>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 16>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 17>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 18>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 19>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 20>>.value == Bit::Off);
+    CHECK(io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 21>>.value == Bit::On);
 
     auto [success, frame_data] = rack.GenerateResponseFrame(193);
 
