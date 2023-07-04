@@ -360,28 +360,28 @@ TEST_CASE("TEST_CASE - vtc::biu")
 {
   using namespace vtc::biu;
 
-  SUBCASE("will return DeviceKind::Biu with SimulatorBiu<1> instance")
+  SUBCASE("will return DeviceKind::Biu with SilsBiu<1> instance")
   {
-    auto &sim_biu = biu::Global::instance<SimulatorBiu<1>>;
+    auto &sim_biu = biu::Global::instance<SilsBiu<1>>;
     CHECK(sim_biu.device_kind() == DeviceKind::Biu);
   }
 
-  SUBCASE("can get cabinet index of SimulatorBiu<1> instance")
+  SUBCASE("can get cabinet index of SilsBiu<1> instance")
   {
-    auto &sim_biu = biu::Global::instance<SimulatorBiu<1>>;
-    CHECK_EQ(sim_biu.cabinet, 1);
+    auto &sim_biu = biu::Global::instance<SilsBiu<1>>;
+    CHECK_EQ(sim_biu.cabinet(), 1);
   }
 
-  SUBCASE("can get frame_maps_size of SimulatorBiu<1> instance")
+  SUBCASE("can get frame_maps_size of SilsBiu<1> instance")
   {
-    SimulatorBiu<1> sim_biu{};
-    CHECK_EQ(sim_biu.frame_maps_size, 3);
+    SilsBiu<1> sim_biu{};
+    CHECK_EQ(sim_biu.frame_maps_size(), 3);
   }
 
-  SUBCASE("can dispatch Type 64 command frame with SimulatorBiu<1> instance")
+  SUBCASE("can dispatch Type 64 command frame with SilsBiu<1> instance")
   {
     io::Global::instance<IntersectionID<1, IoBinding::Fio>>.value = 0;
-    auto *biu = new SimulatorBiu<1>{};
+    auto *biu = new SilsBiu<1>{};
     std::array<Byte, 11> data_in = {254, 0x83, 64, 0x30, 0x37, 0x36, 0x31, 0x33};
 
     auto [success, data_out] = biu->Dispatch(data_in);
@@ -395,7 +395,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
     delete biu;
   }
 
-  SUBCASE("can dispatch Type 65 command frame with SimulatorBiu<1> instance")
+  SUBCASE("can dispatch Type 65 command frame with SilsBiu<1> instance")
   {
     io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
     io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 2>>.value = Bit::On;
@@ -407,7 +407,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
     io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
     io::Global::instance<SimulationStartTime<IoBinding::Fio>>.value = 0x64726B1B;
 
-    auto *biu = new SimulatorBiu<1>{};
+    auto *biu = new SilsBiu<1>{};
     std::array<Byte, 3> data_in = {254, 0x83, 65};
     auto [success, data_out] = biu->Dispatch(data_in);
     CHECK(success);
@@ -423,7 +423,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
     delete biu;
   }
 
-  SUBCASE("can dispatch Type 66 command frame with SimulatorBiu<1> instance")
+  SUBCASE("can dispatch Type 66 command frame with SilsBiu<1> instance")
   {
     io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
     io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::Off;
@@ -436,7 +436,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
     io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
     io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
     io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value = Bit::Off;
-    auto *biu = new SimulatorBiu<1>{};
+    auto *biu = new SilsBiu<1>{};
 
     std::array<Byte, 19> data_in = {254, 0x83, 66, 0b1111'1100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     auto [success, data_out] = biu->Dispatch(data_in);
@@ -461,7 +461,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
     delete biu;
   }
 
-  SUBCASE("can reset I/O variables with SimulatorBiu<1> instance")
+  SUBCASE("can reset I/O variables with SilsBiu<1> instance")
   {
     io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
     io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 1>>.value = Bit::On;
@@ -484,7 +484,7 @@ TEST_CASE("TEST_CASE - vtc::biu")
     io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 7>>.value = Bit::On;
     io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 8>>.value = Bit::On;
 
-    auto *biu = new SimulatorBiu<1>{};
+    auto *biu = new SilsBiu<1>{};
     biu->Reset();
 
     CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
@@ -511,9 +511,9 @@ TEST_CASE("TEST_CASE - vtc::biu")
     delete biu;
   }
 
-  SUBCASE("can generate response frame Type 190 with SimulatorBiu<1> instance")
+  SUBCASE("can generate response frame Type 190 with SilsBiu<1> instance")
   {
-    auto *biu = new SimulatorBiu<1>{};
+    auto *biu = new SilsBiu<1>{};
     biu->Reset();
 
     io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 1>>.value = Bit::On;
@@ -536,9 +536,9 @@ TEST_CASE("TEST_CASE - vtc::biu")
     delete biu;
   }
 
-  SUBCASE("can process command frame with SimulatorBiu<1> instance")
+  SUBCASE("can process command frame with SilsBiu<1> instance")
   {
-    auto *biu = new SimulatorBiu<1>{};
+    auto *biu = new SilsBiu<1>{};
     biu->Reset();
 
     CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 1>>.value, Bit::Off);
@@ -845,7 +845,7 @@ TEST_CASE("TEST_CASE - vtc::aux::du")
 TEST_CASE("TEST_CASE - vtc::rack")
 {
   using namespace vtc::rack;
-  auto &rack = rack::Global::Global::instance<SimulatorBiuRack<1>>;
+  auto &rack = rack::Global::Global::instance<SilsBiuRack<1>>;
 
   SUBCASE("will return DeviceKind::Rack with SimulatorBiuRack<1> instance")
   {
@@ -1061,9 +1061,23 @@ private:
 TEST_CASE("TEST_CASE - vtc::rack with mock simulator")
 {
   auto simulator{XilsTestSimulator(std::filesystem::current_path() / "xils.config.xml")};
-  auto &rack = vtc::rack::Global::Global::instance<vtc::rack::SimulatorBiuRack<1>>;
+  auto &rack = vtc::rack::Global::Global::instance<vtc::rack::SilsBiuRack<1>>;
+
   rack.SetSimulator(&simulator);
   rack.Reset();
+
+  SUBCASE("can get cabinet")
+  {
+    auto cabinet = rack.cabinet();
+    CHECK(cabinet == 1);
+  }
+
+  SUBCASE("can get rack_size")
+  {
+    auto size = rack.rack_size();
+    CHECK(size == 1);
+  }
+
 
   SUBCASE("can get controller id")
   {

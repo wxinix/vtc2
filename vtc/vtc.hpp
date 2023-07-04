@@ -279,6 +279,15 @@ struct SdlcSecondaryStationDevice
   {
     return Derived::get_device_kind();
   }
+
+  /**
+   * Returns the size of the frame maps.
+   * @return
+   */
+  [[nodiscard]] static constexpr auto frame_maps_size()
+  {
+    return Derived::get_frame_maps_size();
+  }
 };
 
 namespace io {
@@ -1135,8 +1144,8 @@ private:
   template<size_t I = 0>
   std::tuple<bool, std::span<const Byte>> DoGenerateResponseFrame(Byte frame_id)
   {
-    if constexpr (I < Derived::frame_maps_size) {
-      auto &res_frame = std::get<1>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
+    if constexpr (I < Derived::frame_maps_size()) {
+      auto &res_frame = std::get<1>(std::get<I>(static_cast<Derived *>(this)->frame_maps_));
       if (res_frame.id() == frame_id) {
         res_frame >> this->buffer_;
         return {true, {this->buffer_.data(), res_frame.byte_size()}};
@@ -1151,8 +1160,8 @@ private:
   template<size_t I = 0>
   bool DoProcessCommandFrame(const std::span<const Byte> data)
   {
-    if constexpr (I < Derived::frame_maps_size) {
-      auto &cmd_frame = std::get<0>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
+    if constexpr (I < Derived::frame_maps_size()) {
+      auto &cmd_frame = std::get<0>(std::get<I>(static_cast<Derived *>(this)->frame_maps_));
       if (cmd_frame.id() == data[2]) {
         cmd_frame << data;
         return true;
@@ -1167,9 +1176,9 @@ private:
   template<size_t I = 0>
   void DoReset()
   {
-    if constexpr (I < Derived::frame_maps_size) {
-      auto &cmd_frame = std::get<0>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
-      auto &res_frame = std::get<1>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
+    if constexpr (I < Derived::frame_maps_size()) {
+      auto &cmd_frame = std::get<0>(std::get<I>(static_cast<Derived *>(this)->frame_maps_));
+      auto &res_frame = std::get<1>(std::get<I>(static_cast<Derived *>(this)->frame_maps_));
       cmd_frame.Reset();
       res_frame.Reset();
       return DoReset<I + 1>();
@@ -1181,9 +1190,9 @@ private:
   template<size_t I = 0>
   std::tuple<bool, std::span<const Byte>> DoDispatch(std::span<const Byte> data_in)
   {
-    if constexpr (I < Derived::frame_maps_size) {
-      auto &cmd_frame = std::get<0>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
-      auto &res_frame = std::get<1>(std::get<I>(static_cast<Derived *>(this)->frame_maps));
+    if constexpr (I < Derived::frame_maps_size()) {
+      auto &cmd_frame = std::get<0>(std::get<I>(static_cast<Derived *>(this)->frame_maps_));
+      auto &res_frame = std::get<1>(std::get<I>(static_cast<Derived *>(this)->frame_maps_));
 
       if (cmd_frame.id() == data_in[2]) {
         cmd_frame << data_in;
@@ -1199,12 +1208,17 @@ private:
 
   [[nodiscard]] static constexpr auto get_cabinet()
   {
-    return Derived::cabinet;
+    return Derived::get_cabinet();
   }
 
   [[nodiscard]] static constexpr auto get_device_kind()
   {
     return DeviceKind::Biu;
+  }
+
+  [[nodiscard]] static constexpr auto get_frame_maps_size()
+  {
+    return Derived::get_frame_maps_size();
   }
 
 private:
@@ -1267,9 +1281,13 @@ struct Global
  */
 template<CabinetIndex Cabinet>
   requires ValidCabinetIndex<Cabinet>
-struct SimulatorBiu : public Biu<SimulatorBiu<Cabinet>>
+struct SilsBiu : public Biu<SilsBiu<Cabinet>>
 {
-  using SimulatorBiuFrameMaps = frame::detail::FrameMaps<
+public:
+  friend class Biu<SilsBiu<Cabinet>>;
+
+private:
+  using SilsBiuFrameMaps = frame::detail::FrameMaps<
       frame::detail::FrameMap<typename BiuFrameType<Cabinet, 64>::type,
                               typename BiuFrameType<Cabinet, 192>::type>,
       frame::detail::FrameMap<typename BiuFrameType<Cabinet, 65>::type,
@@ -1277,7 +1295,7 @@ struct SimulatorBiu : public Biu<SimulatorBiu<Cabinet>>
       frame::detail::FrameMap<typename BiuFrameType<Cabinet, 66>::type,
                               typename BiuFrameType<Cabinet, 194>::type>>;
 
-  const SimulatorBiuFrameMaps frame_maps{
+  const SilsBiuFrameMaps frame_maps_{
       std::make_tuple(
           std::make_tuple(std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 64>::type>),
                           std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 192>::type>)),
@@ -1286,8 +1304,15 @@ struct SimulatorBiu : public Biu<SimulatorBiu<Cabinet>>
           std::make_tuple(std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 66>::type>),
                           std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 194>::type>)))};
 
-  static constexpr auto frame_maps_size{std::tuple_size_v<SimulatorBiuFrameMaps>};
-  static constexpr auto cabinet{Cabinet};
+  [[nodiscard]] static constexpr auto get_frame_maps_size()
+  {
+    return std::tuple_size_v<SilsBiuFrameMaps>;
+  };
+
+  [[nodiscard]] static constexpr auto get_cabinet()
+  {
+    return Cabinet;
+  };
 };
 
 }// namespace biu
@@ -1608,12 +1633,104 @@ concept RackType = requires {
   T::device_kind() == DeviceKind::Rack;
 };
 
+/**
+ * Rack manages a list of BIUs.
+ * @tparam Derived
+ */
+template<typename Derived>
+struct Rack : public SdlcSecondaryStationDevice<Rack<Derived>>
+{
+  friend class SdlcSecondaryStationDevice<Rack<Derived>>;
+
+  [[nodiscard]] static constexpr auto rack_size()
+  {
+    return Derived::get_rack_size();
+  }
+
+private:
+  [[nodiscard]] static constexpr auto get_cabinet()
+  {
+    return Derived::get_cabinet();
+  }
+
+  [[nodiscard]] static constexpr auto get_device_kind()
+  {
+    return DeviceKind::Rack;
+  }
+
+  template<size_t I = 0>
+  std::tuple<bool, std::span<const Byte>> DoGenerateResponseFrame(Byte frame_id)
+  {
+    if constexpr (I < rack_size()) {
+      auto &biu = std::get<I>(static_cast<Derived *>(this)->get_bius());
+      auto result = biu.GenerateResponseFrame(frame_id);
+
+      if (std::get<0>(result)) {
+        return result;
+      } else {
+        return DoGenerateResponseFrame<I + 1>(frame_id);
+      }
+    } else {
+      return {false, {}};
+    }
+  }
+
+  template<size_t I = 0>
+  bool DoProcessCommandFrame(const std::span<const Byte> data)
+  {
+    if constexpr (I < Derived::get_rack_size()) {
+      auto &biu = std::get<I>(static_cast<Derived *>(this)->get_bius());
+      return biu.ProcessCommandFrame(data) || DoProcessCommandFrame<I + 1>(data);
+    } else {
+      return false;
+    }
+  }
+
+  template<size_t I = 0>
+  void DoReset()
+  {
+    if constexpr (I < Derived::get_rack_size()) {
+      auto &biu = std::get<I>(static_cast<Derived *>(this)->get_bius());
+      return biu.Reset(), DoReset<I + 1>();
+    } else {
+      return;
+    }
+  }
+
+  template<size_t I = 0>
+  std::tuple<bool, std::span<const Byte>> DoDispatch(std::span<const Byte> data)
+  {
+    if constexpr (I < Derived::get_rack_size()) {
+      auto &biu = std::get<I>(static_cast<Derived *>(this)->get_bius());
+      auto result = biu.Dispatch(data);
+      if (std::get<0>(result)) {
+        return result;
+      } else {
+        return DoDispatch<I + 1>(data);
+      }
+    } else {
+      return {false, {}};
+    }
+  }
+};
+
+/**
+ * Proxy class for accessing the singleton instance of each rack type.
+ */
+struct Global
+{
+  template<RackType T>
+  inline static T instance{};
+};
+
+/**
+ * X-in-the-Loop Simulation Biu Rack.
+ */
 template<typename Derived, CabinetIndex Cabinet>
-struct Rack : public SdlcSecondaryStationDevice<Rack<Derived, Cabinet>>
+struct XilsBiuRack : Rack<XilsBiuRack<Derived, Cabinet>>
 {
 public:
-  friend class SdlcSecondaryStationDevice<Rack<Derived, Cabinet>>;
-
+  friend class Rack<XilsBiuRack<Derived, Cabinet>>;
   /**
    * Processes detector unit wirings. This involves obtaining detector states
    * from simulation model and sets the states to the detector unit channel.
@@ -1700,85 +1817,38 @@ public:
     });
   }
 
+  /**
+   * ID of the associated controller.
+   * @return
+   */
   [[nodiscard]] ControllerID controller_id() const
   {
     return controller_id_;
   }
 
 private:
+  [[nodiscard]] static constexpr auto get_rack_size()
+  {
+    return Derived::rack_size_;
+  };
+
   [[nodiscard]] static constexpr auto get_cabinet()
   {
     return Cabinet;
-  }
+  };
 
-  [[nodiscard]] static constexpr auto get_device_kind()
+  [[nodiscard]] auto &get_bius()
   {
-    return DeviceKind::Rack;
-  }
+    return static_cast<Derived *>(this)->bius_;
+  };
 
-  template<size_t I = 0>
-  std::tuple<bool, std::span<const Byte>> DoGenerateResponseFrame(Byte frame_id)
-  {
-    if constexpr (I < Derived::rack_size) {
-      auto &biu = std::get<I>(static_cast<Derived *>(this)->bius_);
-      auto result = biu.GenerateResponseFrame(frame_id);
-
-      if (std::get<0>(result)) {
-        return result;
-      } else {
-        return DoGenerateResponseFrame<I + 1>(frame_id);
-      }
-    } else {
-      return {false, {}};
-    }
-  }
-
-  template<size_t I = 0>
-  bool DoProcessCommandFrame(const std::span<const Byte> data)
-  {
-    if constexpr (I < Derived::rack_size) {
-      auto &biu = std::get<I>(static_cast<Derived *>(this)->bius_);
-      return biu.ProcessCommandFrame(data) || DoProcessCommandFrame<I + 1>(data);
-    } else {
-      return false;
-    }
-  }
-
-  template<size_t I = 0>
-  void DoReset()
-  {
-    if constexpr (I < Derived::rack_size) {
-      auto &biu = std::get<I>(static_cast<Derived *>(this)->bius_);
-      return biu.Reset(), DoReset<I + 1>();
-    } else {
-      return;
-    }
-  }
-
-  template<size_t I = 0>
-  std::tuple<bool, std::span<const Byte>> DoDispatch(std::span<const Byte> data)
-  {
-    if constexpr (I < Derived::rack_size) {
-      auto &biu = std::get<I>(static_cast<Derived *>(this)->bius_);
-      auto result = biu.Dispatch(data);
-      if (std::get<0>(result)) {
-        return result;
-      } else {
-        return DoDispatch<I + 1>(data);
-      }
-    } else {
-      return {false, {}};
-    }
-  }
-
-private:
   aux::lsw::LoadSwitchWirings<Cabinet> lsw_wirings_{
       aux::make_wirings<Cabinet>(aux::lsw::LoadSwitchWiringFactory{},
-                                 aux::lsw::LoadSwitchChannels{})};
+                                       aux::lsw::LoadSwitchChannels{})};
 
   aux::du::DetectorWirings<Cabinet> du_wirings_{
       aux::make_wirings<Cabinet>(aux::du::DetectorWiringFactory{},
-                                 aux::du::DetectorChannels{})};
+                                       aux::du::DetectorChannels{})};
 
   ControllerID controller_id_{0};
 
@@ -1786,26 +1856,19 @@ private:
 };
 
 /**
- * Proxy class for accessing the singleton instance of each rack type.
+ * Software in the Loop Simulation BIU Rack.
+ * @tparam Cabinet Index of the cabinet.
  */
-struct Global
-{
-  template<RackType T>
-  inline static T instance{};
-};
-
 template<CabinetIndex Cabinet>
-struct SimulatorBiuRack : Rack<SimulatorBiuRack<Cabinet>, Cabinet>
+struct SilsBiuRack : public XilsBiuRack<SilsBiuRack<Cabinet>, Cabinet>
 {
 public:
-  friend class Rack<SimulatorBiuRack<Cabinet>, Cabinet>;
-
-  using Bius = std::tuple<biu::SimulatorBiu<Cabinet> &>;
-
-  static constexpr auto rack_size{std::tuple_size_v<Bius>};
+  friend class XilsBiuRack<SilsBiuRack<Cabinet>, Cabinet>;
 
 private:
-  const Bius bius_{std::ref(biu::Global::instance<biu::SimulatorBiu<Cabinet>>)};
+  using Bius = std::tuple<biu::SilsBiu<Cabinet> &>;
+  static constexpr auto rack_size_{std::tuple_size_v<Bius>};
+  const Bius bius_{std::ref(biu::Global::instance<biu::SilsBiu<Cabinet>>)};
 };
 
 }// namespace rack
