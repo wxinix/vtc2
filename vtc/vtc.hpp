@@ -267,7 +267,7 @@ struct SdlcSecondaryStationDevice
   /**
    * Returns the cabinet index of the subject device.
    */
-  [[nodiscard]] static constexpr auto cabinet()
+  [[nodiscard]] static consteval auto cabinet()
   {
     return Derived::get_cabinet();
   }
@@ -275,7 +275,7 @@ struct SdlcSecondaryStationDevice
   /**
    * Returns the kind of the subject device.
    */
-  [[nodiscard]] static constexpr auto device_kind()
+  [[nodiscard]] static consteval auto device_kind()
   {
     return Derived::get_device_kind();
   }
@@ -284,7 +284,7 @@ struct SdlcSecondaryStationDevice
    * Returns the size of the frame maps.
    * @return
    */
-  [[nodiscard]] static constexpr auto frame_maps_size()
+  [[nodiscard]] static consteval auto frame_maps_size()
   {
     return Derived::get_frame_maps_size();
   }
@@ -1131,8 +1131,9 @@ concept BiuType = requires {
 };
 
 /**
- * Abstract BIU type.
- * @tparam Derived The specific BIU type. It must has frame_maps, frame_maps_size and cabinet defined.
+ * Abstract BIU type. It should be used as the base class and should not create an
+ * instance by itself.
+ * @tparam Derived The specific BIU type.
  */
 template<typename Derived>
 struct Biu : public SdlcSecondaryStationDevice<Biu<Derived>>
@@ -1206,17 +1207,17 @@ private:
     }
   }
 
-  [[nodiscard]] static constexpr auto get_cabinet()
+  [[nodiscard]] static consteval auto get_cabinet()
   {
     return Derived::get_cabinet();
   }
 
-  [[nodiscard]] static constexpr auto get_device_kind()
+  [[nodiscard]] static consteval auto get_device_kind()
   {
     return DeviceKind::Biu;
   }
 
-  [[nodiscard]] static constexpr auto get_frame_maps_size()
+  [[nodiscard]] static consteval auto get_frame_maps_size()
   {
     return Derived::get_frame_maps_size();
   }
@@ -1304,12 +1305,12 @@ private:
           std::make_tuple(std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 66>::type>),
                           std::ref(frame::Global::instance<typename BiuFrameType<Cabinet, 194>::type>)))};
 
-  [[nodiscard]] static constexpr auto get_frame_maps_size()
+  [[nodiscard]] static consteval auto get_frame_maps_size()
   {
     return std::tuple_size_v<SilsBiuFrameMaps>;
   };
 
-  [[nodiscard]] static constexpr auto get_cabinet()
+  [[nodiscard]] static consteval auto get_cabinet()
   {
     return Cabinet;
   };
@@ -1518,12 +1519,12 @@ struct DetectorUnit
     return activated();
   }
 
-  [[nodiscard]] static constexpr auto cabinet()
+  [[nodiscard]] static consteval auto cabinet()
   {
     return Cabinet;
   };
 
-  [[nodiscard]] static constexpr auto channel()
+  [[nodiscard]] static consteval auto channel()
   {
     return Ch;
   };
@@ -1634,7 +1635,8 @@ concept RackType = requires {
 };
 
 /**
- * Rack manages a list of BIUs.
+ * Rack manages a list of BIUs. It should be used as the base class, and should
+ * not create an instance by itself.
  * @tparam Derived
  */
 template<typename Derived>
@@ -1648,7 +1650,7 @@ struct Rack : public SdlcSecondaryStationDevice<Rack<Derived>>
   }
 
 private:
-  [[nodiscard]] static constexpr auto get_cabinet()
+  [[nodiscard]] static consteval auto get_cabinet()
   {
     return Derived::get_cabinet();
   }
@@ -1724,7 +1726,9 @@ struct Global
 };
 
 /**
- * X-in-the-Loop Simulation Biu Rack.
+ * X-in-the-Loop Simulation Biu Rack. It should be used as the base for
+ * Hardware-in-the-Loop or Software-in-the-Loop Simulation Biu Rack, and
+ * is not supposed to create an instance by itself.
  */
 template<typename Derived, CabinetIndex Cabinet>
 struct XilsBiuRack : Rack<XilsBiuRack<Derived, Cabinet>>
@@ -1827,28 +1831,32 @@ public:
   }
 
 private:
-  [[nodiscard]] static constexpr auto get_rack_size()
+  [[nodiscard]] static consteval auto get_rack_size()
   {
     return Derived::rack_size_;
   };
 
-  [[nodiscard]] static constexpr auto get_cabinet()
+  [[nodiscard]] static consteval auto get_cabinet()
   {
     return Cabinet;
   };
 
-  [[nodiscard]] auto &get_bius()
+  [[nodiscard]] const auto &get_bius()
   {
     return static_cast<Derived *>(this)->bius_;
   };
 
+  /*
+   * We have to include Cabinet as template argument because we need it for the
+   * following template specialization.
+   */
   aux::lsw::LoadSwitchWirings<Cabinet> lsw_wirings_{
       aux::make_wirings<Cabinet>(aux::lsw::LoadSwitchWiringFactory{},
-                                       aux::lsw::LoadSwitchChannels{})};
+                                 aux::lsw::LoadSwitchChannels{})};
 
   aux::du::DetectorWirings<Cabinet> du_wirings_{
       aux::make_wirings<Cabinet>(aux::du::DetectorWiringFactory{},
-                                       aux::du::DetectorChannels{})};
+                                 aux::du::DetectorChannels{})};
 
   ControllerID controller_id_{0};
 
@@ -1860,6 +1868,7 @@ private:
  * @tparam Cabinet Index of the cabinet.
  */
 template<CabinetIndex Cabinet>
+  requires ValidCabinetIndex<Cabinet>
 struct SilsBiuRack : public XilsBiuRack<SilsBiuRack<Cabinet>, Cabinet>
 {
 public:
