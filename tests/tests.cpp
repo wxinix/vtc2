@@ -1068,16 +1068,15 @@ TEST_CASE("TEST_CASE - vtc::rack with mock simulator")
 
   SUBCASE("can get cabinet")
   {
-    auto cabinet = rack.cabinet();
+    auto cabinet = std::remove_cvref_t<decltype(rack)>::cabinet();
     CHECK(cabinet == 1);
   }
 
   SUBCASE("can get rack_size")
   {
-    auto size = rack.rack_size();
+    auto size = std::remove_cvref_t<decltype(rack)>::rack_size();
     CHECK(size == 1);
   }
-
 
   SUBCASE("can get controller id")
   {
