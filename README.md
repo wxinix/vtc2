@@ -16,11 +16,11 @@ When virtualizing a traffic cabinet and its devices, there is often a significan
 
 The IO Variable serves as the foundational component of the VTC framework, acting as an Output, Input, or both, depending on its binding. For instance, the Load switch driver functions as an Output from the Control Unit (CU) and an Input to the Memory Management Unit (MMU). Additionally, an IO Variable can be associated with an index, providing logical differentiation for variables of the same kind. For example, Phase Next can be indexed to represent different phases.
 
-In Object-Oriented Programming or Procedural Programming paradigms, one might consider using an array or list to manage indexed IO variables. However, VTC2 adopts a different approach to achieve higher abstraction and avoid runtime arrays. The use of runtime arrays would make it challenging to implement a functional declarative API style for VTC2. Instead, VTC2 incorporates the Index, IO binding, and Cabinet affinity as part of the non-type template argument, effectively making each indexed IO variable a distinct type.
+In Object-Oriented Programming or Procedural Programming paradigms, one might consider using an array or list to manage indexed IO variables. However, VTC2 adopts a different approach to achieve higher abstraction and avoid runtime arrays. The use of runtime arrays would make it challenging to implement a declarative API style for VTC2. Instead, VTC2 incorporates the `Index`, `IO binding`, and `Cabinet`t affinity as non-type template arguments, effectively making each indexed IO variable a distinct type.
 
 ### Frame
 
-The defining feature of the VTC framework lies in its remarkable expressiveness and the ability to declaratively define various frame types.  The VTC framework simplifies the process for end users by allowing them to declaratively define frame types. The framework then takes care of the serialization and deserialization automatically, eliminating the need to write individual parsers for each distinct frame type.
+The defining feature of the VTC framework lies in its remarkable expressiveness and the ability to define various frame types in a declarative style.  Frame serialization and deserialization is handled by the framework generically without the need to write individual parsers for individual frame types.
 
 For example: 
 
@@ -94,9 +94,9 @@ using TfBiu04_OutputsInputsRequestFrame
 
 ### Global::instance Pattern
 
-VTC2 employs the singleton pattern to reference each unique instance of IO variables, BIUs, MMUs, and CUs. For instance, to reference the global instance of VehicleDetCall for Cabinet 1, Field IO, and Detector Channel 6, you can use ```io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>```. This approach eliminates the need for runtime index searches and allows for direct ```O(1)``` access to the corresponding global variable.
+VTC2 employs the `singleton` pattern to reference each unique instance of IO variables, BIUs, MMUs, and CUs. For instance, to reference the global instance of `VehicleDetCall`` for Cabinet 1, Field IO, and Detector Channel 6, you can use ```io::Global::instance<VehicleDetCall<1, IoBinding::Fio, 6>>```. This strong-typed approach eliminates the need for runtime index searching, with direct ```O(1)``` access to the corresponding global variable.
 
-Note that Cabinet is also one of the non-type template argument, because in X-in-the-Loop Simulation (X = hardware / software) there could be multiple cabinets with each having independent set of devices.
+Note that `Cabinet` is one of the non-type template arguments. For X-in-the-Loop Simulation (X = hardware / software) there could be multiple cabinets with each having independent set of devices.
 
 ## Compiler
 Requires a C++ compiler that supports C++20, and CMake build system.
