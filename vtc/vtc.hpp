@@ -1,8 +1,10 @@
 #ifndef VIRTUAL_TRAFFIC_CABINET_H_
 #define VIRTUAL_TRAFFIC_CABINET_H_
 
+#include <array>
 #include <atomic>
 #include <span>
+#include <stdexcept>
 #include <vector>
 #include <vtc/traits.hpp>
 
@@ -11,22 +13,22 @@ namespace vtc {
 /**
  * Maximum number of load switch channels supported by each virtual cabinet.
  */
-constexpr size_t MAX_LOAD_SWITCHES{32};
+inline constexpr size_t MAX_LOAD_SWITCHES{32};
 
 /**
  * Maximum number of detector channels supported by each virtual cabinet.
  */
-constexpr size_t MAX_VEHICLE_DETECTORS{128};
+inline constexpr size_t MAX_VEHICLE_DETECTORS{128};
 
 /**
  * Maximum number of virtual cabinets supported by this framework.
  */
-constexpr size_t MAX_CABINETS{16};
+inline constexpr size_t MAX_CABINETS{16};
 
 /**
  * The buffer size of SDLC instance processor.
  */
-constexpr size_t MAX_SDLC_FRAME_BYTES{64};
+inline constexpr size_t MAX_SDLC_FRAME_BYTES{64};
 
 /**
  * A bit has two states: Off and On.
