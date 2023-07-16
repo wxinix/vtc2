@@ -1,23 +1,16 @@
-#pragma warning(disable : 4068)
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedMacroInspection"
-
 // clang-format off
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 // clang-format on
+#include <filesystem>
+#include <format>
 
-#include <array>
-#include <stdexcept>
-
-#include <pugixml/pugixml.hpp>
-
-#include <vtc/log.hpp>
-#include <vtc/traits.hpp>
-#include <vtc/vtc.hpp>
+#include "pugixml/pugixml.hpp"
+#include "vtc.hpp"
 
 //----------------------------------------------------
 TEST_SUITE_BEGIN("TEST_SUITE vtc");
+
 using namespace vtc;
 using namespace vtc::io;
 using namespace vtc::frame;
@@ -336,23 +329,6 @@ TEST_CASE("TEST_CASE - vtc::frame")
     CHECK_EQ(io::Global::instance<ChannelRedDoNotWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
     CHECK_EQ(io::Global::instance<ChannelYellowPedClearDriver<1, IoBinding::Fio, 3>>.value, Bit::On);
     CHECK_EQ(io::Global::instance<ChannelGreenWalkDriver<1, IoBinding::Fio, 3>>.value, Bit::Off);
-  }
-}
-
-TEST_CASE("TEST_CASE - vtc::log")
-{
-  using namespace vtc::log;
-
-  SUBCASE("can setup logger")
-  {
-    auto created = setup_logger(fs::current_path(), "test");
-    CHECK(created);
-  }
-
-  SUBCASE("can do log")
-  {
-    CHECK(nullptr != logger());
-    logger()->info("Hello World! Test message!");
   }
 }
 
@@ -912,7 +888,7 @@ TEST_CASE("TEST_CASE - vtc::rack")
 /**
  * For testing purpose only.
  */
-class XilsTestSimulator : public vtc::xils::IXilSimulator
+class XilsTestSimulator : public vtc::xils::ISupportXinLoopSimulation
 {
 public:
   ControllerID GetControllerID(CabinetIndex cabinet) override
@@ -1165,34 +1141,4 @@ TEST_CASE("TEST_CASE - vtc::rack with mock simulator")
   }
 }
 
-struct MyIndexedTestStruct
-{
-  static constexpr int index{1};
-};
-
-struct MyTestStruct
-{
-};
-
-TEST_CASE("TEST_CASE - traits")
-{
-  SUBCASE("can use HasIndex concept")
-  {
-    CHECK(HasIndex<MyIndexedTestStruct>);
-    CHECK(!HasIndex<MyTestStruct>);
-  }
-
-  SUBCASE("can use add_sequence_front")
-  {
-    using seq_t = std::make_integer_sequence<size_t, 3>;
-    auto seq = add_sequence_front_t<100, seq_t>{};
-    auto val = get(seq, 0);
-    CHECK_EQ(val, 100);
-  }
-}
-
 TEST_SUITE_END;
-
-//----------------------------------------------------
-
-#pragma clang diagnostic pop

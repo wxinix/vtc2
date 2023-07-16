@@ -1,14 +1,16 @@
-#ifndef VIRTUAL_TRAFFIC_CABINET_H_
-#define VIRTUAL_TRAFFIC_CABINET_H_
+#pragma once
 
 #include <array>
 #include <atomic>
 #include <span>
 #include <stdexcept>
 #include <vector>
-#include <vtc/traits.hpp>
+
+#include "vtc/utils.hpp"
 
 namespace vtc {
+
+using namespace vtc::utils;
 
 /**
  * Maximum number of load switch channels supported by each virtual cabinet.
@@ -152,7 +154,7 @@ std::tuple<bool, size_t> octets_to_uint32(const T &)
 }
 
 /**
- * Converts octet bytes (up to 8) to its literal uint32 value.
+ * Convert octet bytes (up to 8) to its literal uint32 value.
  * @param octets OctetNumberType using 8 bytes. The leading and trailing hex 0's
  * will be trimmed. Hex 0's are not allowed in between. "Significant" bytes must
  * be ASCII chars between '0' and '9'.
@@ -224,7 +226,7 @@ template<typename Derived>
 struct SdlcSecondaryStationDevice
 {
   /**
-   * Parses a received command frame and immediately generates the corresponding
+   * Parse a received command frame and immediately generate the corresponding
    * response frame.
    * @param data_in The command frame received from controller unit.
    * @return If success, returns the response frame to the command frame;
@@ -236,7 +238,7 @@ struct SdlcSecondaryStationDevice
   }
 
   /**
-   * Generates a response frame given a frame id. The payload will be based on
+   * Generate a response frame given a frame id. The payload will be based on
    * the instantaneous states of the I/O variables bound to the device.
    * @param frame_id Id of the response frame to be generated.
    * @return If success, returns the response frame of the given id; otherwise,
@@ -248,7 +250,7 @@ struct SdlcSecondaryStationDevice
   }
 
   /**
-   * Processes the command frame, and updates states of the I/O variables bound
+   * Process the command frame, and update states of the I/O variables bound
    * to this device accordingly.
    * @param data The command frame to process.
    * @return True for success and false otherwise.
@@ -259,7 +261,7 @@ struct SdlcSecondaryStationDevice
   }
 
   /**
-   * Resets the underlying I/O variables that are bound to this device.
+   * Reset the underlying I/O variables that are bound to this device.
    */
   void Reset()
   {
@@ -267,7 +269,7 @@ struct SdlcSecondaryStationDevice
   }
 
   /**
-   * Returns the cabinet index of the subject device.
+   * Cabinet index of the subject device.
    */
   [[nodiscard]] static consteval auto cabinet()
   {
@@ -275,7 +277,7 @@ struct SdlcSecondaryStationDevice
   }
 
   /**
-   * Returns the kind of the subject device.
+   * Device kind of the subject device.
    */
   [[nodiscard]] static consteval auto device_kind()
   {
@@ -283,8 +285,8 @@ struct SdlcSecondaryStationDevice
   }
 
   /**
-   * Returns the size of the frame maps.
-   * @return
+   * Size of the frame maps. A frame map maps a command frame to its corresponding
+   * response frame.
    */
   [[nodiscard]] static consteval auto frame_maps_size()
   {
@@ -295,7 +297,7 @@ struct SdlcSecondaryStationDevice
 namespace io {
 
 /**
- * Verifies that a type is one of the allowed types for specifying IO variable value.
+ * Verify that a type is one of the allowed types for specifying IO variable value.
  * @tparam T The type to verify.
  */
 template<typename T>
@@ -307,7 +309,7 @@ concept ValidIoVariableValueType = std::disjunction_v<
     std::is_same<T, OctetNumber>>;
 
 /**
- * Specifies the housing device to binds an IO variable to.
+ * Different IO bindings.
  */
 enum class IoBinding
 {
@@ -761,7 +763,7 @@ public:
    */
 
   /**
-   * Returns the frame kind, with value being Command or Response.
+   * Frame kind of the subject frame, either a command or a response frame.
    */
   [[nodiscard]] static constexpr auto frame_kind()
   {
@@ -815,7 +817,7 @@ struct FrameGenerator<Address, FrameID, FrameByteSize, Binding, std::tuple<Frame
 
 /**
  * A type factory for io::VehicleDetCall element in detector call data frame used in simulation.
- * @tparam Cabinet Index of cabinet.
+ * @tparam Cabinet Index of the cabinet.
  * @tparam Binding IO binding.
  * @tparam N Index of detector channel.
  */
@@ -861,7 +863,7 @@ using CallDataFrameBits = typename CallDataFrameBitGenerator<
 
 /**
  * A type factory for io::ChannelGreenWalkDriver element in load switch driver frame for simulation.
- * @tparam Cabinet Index of cabinet.
+ * @tparam Cabinet Index of the cabinet.
  * @tparam Binding IO binding.
  * @tparam N Index of load switch channel.
  */
@@ -907,7 +909,7 @@ using GreenChannelDriverFrameBits = typename GreenChannelDriverFrameBitGenerator
 
 /**
  * A type factory for io::ChannelYellowPedClearDriver element in load switch driver frame for simulation.
- * @tparam Cabinet Index of cabinet.
+ * @tparam Cabinet Index of the cabinet.
  * @tparam Binding IO binding.
  * @tparam N Index of load switch channel.
  */
@@ -953,7 +955,7 @@ using YellowChannelDriverFrameBits = typename YellowChannelDriverFrameBitGenerat
 
 /**
  * A type factory for io::ChannelRedDoNotWalkDriver element in load switch driver frame for simulation.
- * @tparam Cabinet Index of cabinet.
+ * @tparam Cabinet Index of the cabinet.
  * @tparam Binding IO binding.
  * @tparam N Index of load switch channel.
  */
@@ -1328,19 +1330,6 @@ auto make_wirings(Factory, std::integer_sequence<T, Is...>)
   return std::make_tuple(Factory::template make<Cabinet, Is>()...);
 }
 
-/**
- * Enumerates a list of wirings and applies the func to each wiring item.
- */
-template<typename WiringsT, typename F>
-void for_each(WiringsT &&wirings, F &&func)
-{
-  std::apply(
-      [&func]<typename... T>(T &&...args) {
-        (func(std::forward<T>(args)), ...);
-      },
-      std::forward<WiringsT>(wirings));
-}
-
 namespace lsw {// Load Switch
 
 enum class LoadSwitchState : short
@@ -1568,26 +1557,26 @@ using DetectorWirings = decltype(make_wirings<Cabinet>(DetectorWiringFactory{}, 
 namespace xils {// X in the loop simulation, x = software/hardware
 
 /**
- * X-in-the-Loop Simulation (XILS) interface that needs to be implemented
- * by the simulator.
+ * Interface that must be implemented by an object that supports X in the Loop
+ * Simulation.
  */
-struct IXilSimulator
+struct ISupportXinLoopSimulation
 {
   /**
-   * Gets the controller id for the given cabinet from the simulator. This id is
+   * Get the controller id for the given cabinet from the simulator. This id is
    * defined by the simulator.
    * @param cabinet Index of the cabinet.
    */
   virtual ControllerID GetControllerID(CabinetIndex cabinet) = 0;
 
   /**
-   * Gets sensor state, which can be ON or OFF, of a given sensor from the simulator.
+   * Get the sensor state, which can be ON or OFF, of a given sensor from the simulator.
    * @param sensor_id ID of the sensor defined by the simulator.
    */
   virtual bool GetSensorState(DetectionZoneID sensor_id) = 0;
 
   /**
-   * Sets signal state of a given signal in the simulator. The signal can be either
+   * Set the signal state of a given signal in the simulator. The signal can be either
    * identified by signal group ID, or by the combination of approach ID and turn
    * ID. Some simulator implementation uses signal group ID, some the other way.
    * @param sg_id ID of the signal group in the simulation model.
@@ -1601,7 +1590,7 @@ struct IXilSimulator
                               aux::lsw::LoadSwitchState state) = 0;
 
   /**
-   * Gets the list of sensor IDs in the simulation model associated with the given
+   * Get the list of sensor IDs in the simulation model associated with the given
    * detector channel.
    * @param id ID of the controller in the simulation model.
    * @param ch ID of the detector channel.
@@ -1619,7 +1608,7 @@ struct IXilSimulator
   using SignalGroupEx = std::tuple<SignalGroupID, std::span<Movement>>;
 
   /**
-   * Gets signal group (if defined) and turn movements defined in the simulation model
+   * Get the signal group (if defined) and turn movements defined in the simulation model
    * that is associated with the given load switch channel.
    * @param id ID of the controller in the simulation model.
    * @param ch ID of the load switch channel.
@@ -1738,7 +1727,7 @@ struct XilsBiuRack : Rack<XilsBiuRack<Derived, Cabinet>>
 public:
   friend class Rack<XilsBiuRack<Derived, Cabinet>>;
   /**
-   * Processes detector unit wirings. This involves obtaining detector states
+   * Process detector unit wirings. This involves obtaining detector states
    * from simulation model and sets the states to the detector unit channel.
    */
   void ProcessDetectorWirings()
@@ -1746,7 +1735,7 @@ public:
     if (not simulator_)
       return;
 
-    aux::for_each(du_wirings_, [&](auto &&el) {
+    for_each(du_wirings_, [&](auto &&el) {
       auto &[detector, sensor_ids] = el;
       bool value = false;
 
@@ -1760,7 +1749,7 @@ public:
   }
 
   /**
-   * Processes load switch wirings. This involves obtaining load switch driver
+   * Process load switch wirings. This involves obtaining load switch driver
    * states and sets the states to signals in the simulation model.
    */
   void ProcessLoadSwitchWirings()
@@ -1768,7 +1757,7 @@ public:
     if (not simulator_)
       return;
 
-    aux::for_each(lsw_wirings_, [&](auto &&el) {
+    for_each(lsw_wirings_, [&](auto &&el) {
       auto &[lsw, sg] = el;
       auto &[sg_id, movements] = sg;
 
@@ -1784,20 +1773,24 @@ public:
   }
 
   /**
-   * Sets the simulator interface to this rack instance. This will sets up the
+   * Set the simulator interface to this rack instance. This will sets up the
    * detector unit channel mapping and load switch channel mapping between the
    * external controller software and the traffic simulator.
    * @param a_simulator The simulator interface; must be not null.
    */
-  void SetSimulator(xils::IXilSimulator *a_simulator)
+  void SetSimulator(xils::ISupportXinLoopSimulation *a_simulator)
   {
-    if (not a_simulator)
+    if (!a_simulator)
       throw std::runtime_error("NRE while calling Rack::SetSimulator.");
 
-    simulator_ = a_simulator;
     controller_id_ = a_simulator->GetControllerID(this->cabinet());
+    if (!controller_id_)
+      return;
+
+    simulator_ = a_simulator;
+
     // Set up the simulation sensor ids and detector unit channel mapping.
-    aux::for_each(du_wirings_, [&](auto &&el) {
+    for_each(du_wirings_, [&](auto &&el) {
       auto &[du, zones] = el;
       auto l_zones = simulator_->GetDetectionZoneIDs(controller_id_, du.channel());
       zones.clear();
@@ -1808,7 +1801,7 @@ public:
     });
 
     // Set up simulation signals and load switch channel mapping.
-    aux::for_each(lsw_wirings_, [&](auto &&el) {
+    for_each(lsw_wirings_, [&](auto &&el) {
       auto &[lsw, sg] = el;
       auto &[sg_id, movements] = sg;
       movements.clear();
@@ -1854,15 +1847,15 @@ private:
    */
   aux::lsw::LoadSwitchWirings<Cabinet> lsw_wirings_{
       aux::make_wirings<Cabinet>(aux::lsw::LoadSwitchWiringFactory{},
-                                 aux::lsw::LoadSwitchChannels{})};
+                                           aux::lsw::LoadSwitchChannels{})};
 
   aux::du::DetectorWirings<Cabinet> du_wirings_{
       aux::make_wirings<Cabinet>(aux::du::DetectorWiringFactory{},
-                                 aux::du::DetectorChannels{})};
+                                           aux::du::DetectorChannels{})};
 
   ControllerID controller_id_{0};
 
-  xils::IXilSimulator *simulator_{nullptr};
+  xils::ISupportXinLoopSimulation *simulator_{nullptr};
 };
 
 /**
@@ -1885,5 +1878,3 @@ private:
 }// namespace rack
 
 }// namespace vtc
-
-#endif//VIRTUAL_TRAFFIC_CABINET_H_

@@ -10,7 +10,7 @@
 #include <pugixml/pugixml.hpp>
 
 #include <vtc/log.hpp>
-#include <vtc/traits.hpp>
+#include <vtc/utils.hpp>
 #include <vtc/vtc.hpp>
 
 //----------------------------------------------------
@@ -909,7 +909,7 @@ TEST_CASE("TEST_CASE - vtc::rack")
 /**
  * For testing purpose only.
  */
-class XilsTestSimulator : public vtc::xils::IXilSimulator
+class XilsTestSimulator : public vtc::xils::ISupportXinLoopSimulation
 {
 public:
   ControllerID GetControllerID(CabinetIndex cabinet) override

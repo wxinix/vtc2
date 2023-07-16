@@ -5,8 +5,11 @@ if(MSVC)
 endif()
 
 add_executable(${TARGET_EXE_NAME}
-        ${CMAKE_SOURCE_DIR}/tests/main.cpp
-        ${CMAKE_SOURCE_DIR}/thirdparty/pugixml/pugixml.cpp)
+        ${CMAKE_SOURCE_DIR}/tests/vtc_test.cpp
+        ${CMAKE_SOURCE_DIR}/tests/log_test.cpp
+        ${CMAKE_SOURCE_DIR}/tests/delegate_test.cpp
+        ${CMAKE_SOURCE_DIR}/tests/utils_test.cpp
+        ${CMAKE_SOURCE_DIR}/thirdparty/pugixml/pugixml.cpp utils_test.cpp log_test.cpp log_test.cpp vtc_test.cpp)
 
 set(INCLUDE_DIR
         "${CMAKE_SOURCE_DIR}"

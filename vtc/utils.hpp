@@ -1,12 +1,20 @@
-#ifndef VIRTUAL_TRAFFIC_CABINET_TRAITS_H_
-#define VIRTUAL_TRAFFIC_CABINET_TRAITS_H_
+#pragma once
 
+#include <array>
 #include <tuple>
 #include <type_traits>
+
+namespace vtc::utils {
 
 template<typename Tuple1, typename Tuple2, typename Tuple3>
 struct concatenate_tuples;
 
+/**
+ * Concatenate 3 tuples into one tuple.
+ * @tparam Ts1 The first tuple.
+ * @tparam Ts2 The second tuple.
+ * @tparam Ts3 The third tuple.
+ */
 template<typename... Ts1, typename... Ts2, typename... Ts3>
 struct concatenate_tuples<std::tuple<Ts1...>, std::tuple<Ts2...>, std::tuple<Ts3...>>
 {
@@ -19,6 +27,11 @@ using concatenate_tuples_t = typename concatenate_tuples<Tuple1, Tuple2, Tuple3>
 template<typename Tuple, typename T>
 struct append_tuple;
 
+/**
+ * Append a new type to an existing tuple.
+ * @tparam Ts The types of the elements of the existing tuple.
+ * @tparam T The type of the new element to append the existing tuple.
+ */
 template<typename... Ts, typename T>
 struct append_tuple<std::tuple<Ts...>, T>
 {
@@ -46,9 +59,9 @@ template<size_t Offset, typename SeqType>
 struct offset_sequence;
 
 /**
- * Offsetting a sequence by the given template argument.
- * @tparam Offset Offset value. Note 0 means offset by 1.
- * @tparam Is The sequence to be "offset".
+ * Add an offset value to each element of an integer sequence.
+ * @tparam Offset The offset value, 0 means offset by 1.
+ * @tparam Is The sequence to be offset.
  */
 template<size_t Offset, typename T, T... Is>
 struct offset_sequence<Offset, std::integer_sequence<T, Is...>>
@@ -57,7 +70,7 @@ struct offset_sequence<Offset, std::integer_sequence<T, Is...>>
 };
 
 /**
- * Offset value 0 means to "offset" the sequence by 1.
+ * Offset value 0 means to "offset" the integer sequence by 1.
  */
 template<size_t Offset, typename SeqType>
 using offset_sequence_t = typename offset_sequence<Offset, SeqType>::type;
@@ -95,4 +108,21 @@ struct add_sequence_front<I, std::integer_sequence<size_t, Is...>>
 template<size_t I, typename SeqType>
 using add_sequence_front_t = typename add_sequence_front<I, SeqType>::type;
 
-#endif//VIRTUAL_TRAFFIC_CABINET_TRAITS_H_
+/**
+ * Enumerate each element of a tuple, and apply the given functor to the element.
+ * @tparam Tuple The type of the tuple.
+ * @tparam F The functor type.
+ * @param tuple The tuple.
+ * @param func The functor.
+ */
+template<typename Tuple, typename F>
+void for_each(Tuple &&tuple, F &&func)
+{
+  std::apply(
+      [&func]<typename... T>(T &&...args) {
+        (func(std::forward<T>(args)), ...);
+      },
+      std::forward<Tuple>(tuple));
+}
+
+}// namespace vtc::traits

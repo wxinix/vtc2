@@ -1,10 +1,10 @@
-#ifndef VIRTUAL_TRAFFIC_CABINET_LOG_H_
-#define VIRTUAL_TRAFFIC_CABINET_LOG_H_
+#pragma once
 
 #include <filesystem>
-#include <spdlog/sinks/msvc_sink.h>
-#include <spdlog/sinks/rotating_file_sink.h>
-#include <spdlog/spdlog.h>
+
+#include "spdlog/sinks/msvc_sink.h"
+#include "spdlog/sinks/rotating_file_sink.h"
+#include "spdlog/spdlog.h"
 
 namespace vtc::log {
 
@@ -94,4 +94,3 @@ bool setup_logger(const fs::path &path, const std::string &logger_name)
 }
 
 }// namespace vtc::log
-#endif// VIRTUAL_TRAFFIC_CABINET_LOG_H_
