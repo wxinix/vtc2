@@ -2,7 +2,7 @@
 
 Virtual Traffic Cabinet (VTC) 2 represents a notable advancement over my previous [original VTC framework](https://github.com/wxinix/vtc), providing an enhanced virtualization and Digital Twin solution in [*modern C++20*](https://wxinix.github.io/cpp-explained/book/index.html) for traffic cabinets in accordance with the NEMA-TS2 and ATC Standards. 
 
-VTC 2 introduces a higher level of abstraction compared to its predecessor, enabling the seamless integration and manipulation of various NEMA-TS2 and ATC elements. This advanced level of abstraction empowers developers to create versatile and software-defined traffic cabinets and traffic signal controllers. By leveraging the capabilities of VTC 2, engineers can design and implement generic solutions that are adaptable to diverse traffic management scenarios.
+VTC 2 introduces a higher level of abstraction compared to its predecessor, enabling the seamless integration and manipulation of various NEMA-TS2 and ATC elements. This advanced level of abstraction empowers developers to create versatile and software-defined traffic cabinets and traffic signal controllers. By leveraging the capabilities of VTC 2, engineers can design and implement generic **Digital Twin** solutions that are adaptable to diverse traffic management scenarios.
 
 ## VTC2 Design
 
