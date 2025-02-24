@@ -18,7 +18,7 @@ struct concatenate_tuples;
 template<typename... Ts1, typename... Ts2, typename... Ts3>
 struct concatenate_tuples<std::tuple<Ts1...>, std::tuple<Ts2...>, std::tuple<Ts3...>>
 {
-  using type = std::tuple<Ts1..., Ts2..., Ts3...>;
+    using type = std::tuple<Ts1..., Ts2..., Ts3...>;
 };
 
 template<typename Tuple1, typename Tuple2, typename Tuple3>
@@ -35,7 +35,7 @@ struct append_tuple;
 template<typename... Ts, typename T>
 struct append_tuple<std::tuple<Ts...>, T>
 {
-  using type = std::tuple<Ts..., T>;
+    using type = std::tuple<Ts..., T>;
 };
 
 template<typename Tuple, typename T>
@@ -47,12 +47,12 @@ using append_tuple_t = typename append_tuple<Tuple, T>::type;
  */
 template<typename T>
 concept HasIndex = requires(T t) {
-  requires std::is_const_v<decltype(T::index)> &&                             /**/
-      std::integral<decltype(T::index)> &&                                    /**/
-      !std::is_same_v<std::remove_cv_t<decltype(T::index)>, char> &&          /**/
-      !std::is_same_v<std::remove_cv_t<decltype(T::index)>, signed char> &&   /**/
-      !std::is_same_v<std::remove_cv_t<decltype(T::index)>, unsigned char> && /**/
-      !std::is_same_v<std::remove_cv_t<decltype(T::index)>, bool>;
+    requires std::is_const_v<decltype(T::index)> &&                             /**/
+        std::integral<decltype(T::index)> &&                                    /**/
+        !std::is_same_v<std::remove_cv_t<decltype(T::index)>, char> &&          /**/
+        !std::is_same_v<std::remove_cv_t<decltype(T::index)>, signed char> &&   /**/
+        !std::is_same_v<std::remove_cv_t<decltype(T::index)>, unsigned char> && /**/
+        !std::is_same_v<std::remove_cv_t<decltype(T::index)>, bool>;
 };
 
 template<size_t Offset, typename SeqType>
@@ -66,7 +66,7 @@ struct offset_sequence;
 template<size_t Offset, typename T, T... Is>
 struct offset_sequence<Offset, std::integer_sequence<T, Is...>>
 {
-  using type = std::integer_sequence<T, Is + (Offset + 1)...>;
+    using type = std::integer_sequence<T, Is + (Offset + 1)...>;
 };
 
 /**
@@ -87,8 +87,8 @@ using offset_sequence_t = typename offset_sequence<Offset, SeqType>::type;
 template<typename T, T... Is>
 constexpr T get(std::integer_sequence<T, Is...>, std::size_t i)
 {
-  constexpr auto arr = std::array{Is...};
-  return arr[i];
+    constexpr auto arr = std::array{Is...};
+    return arr[i];
 }
 
 template<size_t I, typename SeqType>
@@ -102,7 +102,7 @@ struct add_sequence_front;
 template<size_t I, size_t... Is>
 struct add_sequence_front<I, std::integer_sequence<size_t, Is...>>
 {
-  using type = std::integer_sequence<size_t, I, Is...>;
+    using type = std::integer_sequence<size_t, I, Is...>;
 };
 
 template<size_t I, typename SeqType>
@@ -118,11 +118,7 @@ using add_sequence_front_t = typename add_sequence_front<I, SeqType>::type;
 template<typename Tuple, typename F>
 void for_each(Tuple &&tuple, F &&func)
 {
-  std::apply(
-      [&func]<typename... T>(T &&...args) {
-        (func(std::forward<T>(args)), ...);
-      },
-      std::forward<Tuple>(tuple));
+    std::apply([&func]<typename... T>(T &&...args) { (func(std::forward<T>(args)), ...); }, std::forward<Tuple>(tuple));
 }
 
-}// namespace vtc::traits
+}// namespace vtc::utils
