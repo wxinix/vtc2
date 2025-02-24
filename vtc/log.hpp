@@ -16,44 +16,34 @@ namespace fs = std::filesystem;
 using Logger = std::shared_ptr<spdlog::logger>;
 
 /**
- * Unnamed namespace for VtcLoggerHolder in order to have a global thread-safe
- * singleton logger without defining it in a separate translation unit.
- */
-namespace {
-/**
  * Proxy class for thread-safe singleton logger.
  */
 struct LoggerHolder
 {
-  /**
-   * Inline initialization is possible with C++17. Alternatively, we can define
-   * the logger separately outside LoggerHolder class declaration but inside
-   * the unnamed namespace. LoggerHolder is a member of unnamed namespace,
-   * its static data member does not have external linkage, which allows this
-   * header to be included multiple times in different translation unit.
+    /**
+   * Inline static variable ensures a single instance across all translation units.
+   * `std::atomic` provides thread-safe access.
    */
-  inline static std::atomic<Logger> logger{nullptr};
+    inline static std::atomic<Logger> logger{nullptr};
 };
-
-}// namespace
 
 /**
  * Thread-safe access to the singleton logger. It ought to be called only after
  * logger has been set up, i.e., setup_logger has been called; otherwise, nullptr
  * will be returned.
  */
-Logger logger()
+inline Logger logger()
 {
-  return LoggerHolder::logger;
+    return LoggerHolder::logger.load();// Ensure safe automatic read
 }
 
 /**
- * Setup the logger singleton with a given output path and file name. The log file
+ * Set up the logger singleton with a given output path and file name. The log file
  * will be saved to the designated output path, using the specified logger name
  * appended with "-log.txt".
  *
  * The parent path needs to be pre-existing. If for any reason, the log file cannot
- * be created, default logger will be used (on Windows, that is is the debug output).
+ * be created, default logger will be used (on Windows, that is the debug output).
  * If the log file can be created, the log file will be rotated by 1MB file size
  * and up to 3 files.
  *
@@ -61,36 +51,41 @@ Logger logger()
  * each time. However, if the same logger name has been used, an exception will
  * be thrown.
  *
- * @param path A path where to save the log file.
  * @param logger_name Name of internal logger as well as part of output file name.
+ * @param level Log level.
+ * @param path A path where to save the log file. If unspecified, will create debug view.
  *
  * @returns true if the intended logger is created, false default logger.
  */
-bool setup_logger(const fs::path &path, const std::string &logger_name)
+inline bool setup_logger(const std::string &logger_name, const spdlog::level::level_enum level = spdlog::level::trace,
+                         const fs::path &path = {})
 {
-  using namespace spdlog;
+    using namespace spdlog;
 
-  const auto p = path / "log";
-  std::error_code ec;
+    Logger the_logger{nullptr};
+    bool default_logger_created{true};
 
-  Logger the_logger{nullptr};
-  bool default_logger_created;
+    if (!path.empty()) {
+        const auto p = path / "log";
+        // create_directory(p,ec) would return false if exists.
+        if (std::error_code ec; create_directory(p, ec) || exists(p)) {
+            const auto log_file = (p / (logger_name + "-log.txt")).string();
+            the_logger = rotating_logger_mt(logger_name,// Internal logger name
+                                            log_file,   // Output file name
+                                            1024 * 1024,// 1 MB log file size
+                                            3);         // rotate by 3 files at most
+            default_logger_created = false;
+        }
+    }
 
-  // create_directory(p,ec) would return false if exists.
-  if (fs::create_directory(p, ec) || fs::exists(p)) {
-    const auto log_file = (p / (logger_name + "-log.txt")).string();
-    the_logger = rotating_logger_mt(logger_name,// Internal logger name
-                                    log_file,   // Output file name
-                                    1024 * 1024,// 1 MB log file size
-                                    3);         // rotate by 3 files at most
-    default_logger_created = false;
-  } else {
-    the_logger = synchronous_factory::create<sinks::windebug_sink_mt>(logger_name + "_windbg");
-    default_logger_created = true;
-  }
+    if (!the_logger) {
+        the_logger = synchronous_factory::create<sinks::windebug_sink_mt>(logger_name + "_debugview", false);
+        default_logger_created = true;
+    }
 
-  LoggerHolder::logger = the_logger;
-  return !default_logger_created;
+    the_logger->set_level(level);
+    LoggerHolder::logger = the_logger;
+    return !default_logger_created;
 }
 
 }// namespace vtc::log
