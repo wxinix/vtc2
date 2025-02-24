@@ -1327,8 +1327,8 @@ The source of these frames is the TF BIU \#1. This frame type shall be transmitt
 			\textbf{Bit} & \textbf{Byte}       & \textbf{Value} & \textbf{Function}                       &                    & \textbf{Bit} & \textbf{Byte}       & \textbf{Value} & \textbf{Function}                         \\ \cline{1-4} \cline{6-9} 
 			1            &                     & 0              &                                         &                    & 25           &                     &                & Input/Output 17 (Test B {[}I{]})          \\
 			2            &                     & 1              &                                         &                    & 26           &                     &                & Input/Output 18 (Auto Flash {[}I{]})      \\
-			3            &                     & 0              &                                         &                    & 27           &                     &                & Input/Output 19 (Dimming Ena {[}I{]}      \\
-			4            &                     & 1              &                                         &                    & 28           &                     &                & Input/Output 20 (Manual Ctrl Ena {[}I{]}) \\
+			3            &                     & 0              &                                         &                    & 27           &                     &                & Input/Output 19 (Dimming Enable {[}I{]}      \\
+			4            &                     & 1              &                                         &                    & 28           &                     &                & Input/Output 20 (Manual Ctrl Enable {[}I{]}) \\
 			5            &                     & 0              &                                         &                    & 29           &                     &                & Input/Output 21 (Interval Adv {[}I{]})    \\
 			6            &                     & 0              &                                         &                    & 30           &                     &                & Input/Output 22 (Ext Min Recall {[}I{]})  \\
 			7            &                     & 0              &                                         &                    & 31           &                     &                & Input/Output 23 (Ext Start {[}I{]})       \\
@@ -1750,7 +1750,7 @@ This frame type shall be transmitted only if a Type 40 Frame has been correctly 
 		8            & 1             &                               \\ \hline
 	\end{tabular}
 	\caption{Type 168 Response Frame (Type 40 ACK)}
-	\label{tab:type-169-frame}
+	\label{tab:type-168-frame}
 \end{table}
 
 \clearpage
@@ -1967,7 +1967,7 @@ The serial adapter should have the capability outlined in Table \ref{tab:serial-
 			\begin{tabular}[c]{@{}l@{}}Adapter as virtual MMU;\\ shall have input termination enabled\end{tabular} \\
 			TxC &
 			153600 or 614400&
-			\begin{tabular}[c]{@{}l@{}}The adapter should generate\\ transmitting clock\\ 153.6 KHz (NEMA-TS) or 614.4 KHz (ATC)\end{tabular} \\
+			\begin{tabular}[c]{@{}l@{}}The adapter should generate\\ transmitting clock\\ 153.6 kHz (NEMA-TS) or 614.4 kHz (ATC)\end{tabular} \\
 			\rowcolor[HTML]{EFEFEF} 
 			\begin{tabular}[c]{@{}l@{}}Disable\\ RS485 outputs\\ when RTS is off\end{tabular} &
 			NA &
