@@ -165,15 +165,13 @@ std::tuple<bool, uint32_t> octets_to_uint32(const T &octets)
 {
     uint32_t value{0};
     bool is_valid{false};
-    const char *bytes = reinterpret_cast<const char *>(&octets);
+    const auto bytes = reinterpret_cast<const char *>(&octets);
 
     for (int i = sizeof(OctetNumber) - 1; i >= 0; i--) {
         if (bytes[i] == 0) {
             if ((i < sizeof(OctetNumber) - 1) && (i > 0) && (bytes[i + 1] != 0) && (bytes[i - 1] != 0)) {
                 is_valid = false;
                 break;
-            } else {
-                continue;
             }
         } else if (bytes[i] >= '0' && bytes[i] <= '9') {
             is_valid = true;
@@ -240,7 +238,7 @@ struct SdlcSecondaryStationDevice
     /**
    * Generate a response frame given a frame id. The payload will be based on
    * the instantaneous states of the I/O variables bound to the device.
-   * @param frame_id Id of the response frame to be generated.
+   * @param frame_id ID of the response frame to be generated.
    * @return If success, returns the response frame of the given id; otherwise,
    * and empty byte array.
    */
@@ -508,6 +506,7 @@ namespace detail {
  */
 struct FrameElement
 {
+    virtual ~FrameElement() = default;
     virtual void operator<<(std::span<const Byte> data_in) = 0;
     virtual void operator>>(std::span<Byte> data_out) = 0;
 };
@@ -544,7 +543,7 @@ struct FrameBit : FrameElement
 /**
  * Frame element stored as Byte.
  * @tparam T The IO variable type, its value type is Byte.
- * @tparam BitPos 0-based byte position in the frame payload.
+ * @tparam BytePos 0-based byte position in the frame payload.
  */
 template<typename T, size_t BytePos>
     requires std::is_same_v<io::IoVariableValueType<T>, Byte>
@@ -567,7 +566,7 @@ struct FrameByte : FrameElement
 /**
  * Frame element stored as Word.
  * @tparam T The IO variable type, its value type is Word.
- * @tparam BitPos 0-based starting byte position in the frame payload.
+ * @tparam BytePos 0-based starting byte position in the frame payload.
  */
 template<typename T, size_t BytePos> /* BytePos: position of Word value low byte */
     requires std::is_same_v<io::IoVariableValueType<T>, Word>
@@ -591,7 +590,7 @@ struct FrameWord : FrameElement
 /**
  * Frame element stored as Cardinal.
  * @tparam T The IO variable type, its value type is Cardinal.
- * @tparam BitPos 0-based byte position in the frame payload.
+ * @tparam BytePos 0-based byte position in the frame payload.
  */
 template<typename T, size_t BytePos> /* BytePos: position of value the least significant byte */
     requires std::is_same_v<io::IoVariableValueType<T>, Cardinal>
@@ -617,7 +616,7 @@ struct FrameCardinal : FrameElement
 /**
  * Frame element stored as OctetNumber.
  * @tparam T The IO variable type, its value type is OctetNumber.
- * @tparam BitPos 0-based byte position in the frame payload.
+ * @tparam BytePos 0-based byte position in the frame payload.
  */
 template<typename T, size_t BytePos> /* BytePos: position of OctetString starting byte */
     requires std::is_same_v<io::IoVariableValueType<T>, OctetNumber>
@@ -709,7 +708,7 @@ public:
         static_assert(((Binding == io::IoBinding::Cu) and (FrameID <= 127)) or /**/
                       ((Binding != io::IoBinding::Cu) and (FrameID >= 128)));
 
-        std::fill(data_out.begin(), data_out.end(), 0);
+        std::ranges::fill(data_out, 0);
         data_out[0] = address();
         data_out[1] = 0x83;
         data_out[2] = id();
@@ -1022,7 +1021,7 @@ using SimulatorCallRequestFrame = detail::Frame<254,// Simulator Address = 254
 template<CabinetIndex Cabinet, io::IoBinding Binding>
     requires ValidCabinetIndex<Cabinet>
 using SimulatorCallDataFrame =
-    detail::FrameGenerator<254,// Simulator Address = 254
+    typename detail::FrameGenerator<254,// Simulator Address = 254
                            193,// FrameID = 193
                            23, // Total number of bytes of the instance
                            Binding,
@@ -1039,7 +1038,7 @@ using SimulatorCallDataFrame =
 
 template<CabinetIndex Cabinet, io::IoBinding Binding>
     requires ValidCabinetIndex<Cabinet>
-using SimulatorLoadSwitchDriversFrame = detail::FrameGenerator<
+using SimulatorLoadSwitchDriversFrame = typename detail::FrameGenerator<
     254,// Simulator Address = 254
     66, // FrameID = 66
     19, // Total number of bytes of the instance
@@ -1307,7 +1306,7 @@ auto make_load_switch_driver()
 }// namespace detail
 
 /**
- * An integer sequence of 1 .. MAX_LOAD_SWITCHES
+ * An integer sequence of 1 ... MAX_LOAD_SWITCHES
  */
 using LoadSwitchChannels = offset_sequence_t<0, std::make_integer_sequence<LoadSwitchChannel, MAX_LOAD_SWITCHES>>;
 
@@ -1487,6 +1486,7 @@ namespace xils {// X in the loop simulation, x = software/hardware
  */
 struct ISupportXinLoopSimulation
 {
+    virtual ~ISupportXinLoopSimulation() = default;
     /**
    * Get the controller id for the given cabinet from the simulator. This id is
    * defined by the simulator.
