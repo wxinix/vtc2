@@ -195,23 +195,33 @@ std::tuple<bool, uint32_t> octets_to_uint32(const T &octets)
 enum class DeviceKind
 {
     /**
-   * Malfunction Management Unit.
-   */
+     * Malfunction Management Unit.
+     */
     Mmu,
 
     /**
-   * Bus Interface Unit.
-   */
+     * Cabinet Monitoring Unit, such as Model 2212 CMU for ATC cabinet.
+     */
+    Cmu,
+
+    /**
+     * Bus Interface Unit.
+     */
     Biu,
 
     /**
-   * Controller Unit.
-   */
+     * Serial Interface Unit, such as Model 2218 SIU for ATC cabinet.
+     */
+    Siu,
+
+    /**
+     * Controller Unit.
+     */
     Cu,
 
     /**
-   * Rack such as Detector Rack or BIU Rack.
-   */
+     * Rack such as Detector Rack or BIU Rack.
+     */
     Rack,
 };
 
@@ -310,14 +320,13 @@ enum class IoBinding
 {
     Fio, /* Field IO */
     Mmu, /* Malfunction Management Unit */
+    Cmu, /* Cabinet Monitoring Unit */
     Cu   /* Controller Unit */
 };
 
 template<typename T>
 concept IoVariableType = requires {
-    {
-        T::binding()
-    } -> std::same_as<IoBinding>;
+    { T::binding() } -> std::same_as<IoBinding>;
 
     ValidIoVariableValueType<typename T::IoVariable::value_t>;
 };
@@ -475,25 +484,19 @@ enum class FrameKind
 
 template<typename T>
 concept FrameType = requires {
-    {
-        T::frame_kind()
-    } -> std::same_as<FrameKind>;
+    { T::frame_kind() } -> std::same_as<FrameKind>;
 };
 
 template<typename T>
 concept CommandFrameType = requires {
-    {
-        T::frame_kind()
-    } -> std::same_as<FrameKind>;
+    { T::frame_kind() } -> std::same_as<FrameKind>;
 
     T::frame_kind() == FrameKind::Command;
 };
 
 template<typename T>
 concept ResponseFrameType = requires {
-    {
-        T::frame_kind()
-    } -> std::same_as<FrameKind>;
+    { T::frame_kind() } -> std::same_as<FrameKind>;
 
     T::frame_kind() == FrameKind::Response;
 };
@@ -518,9 +521,9 @@ struct FrameElement
  */
 template<typename T, size_t BitPos>
     requires std::is_same_v<io::IoVariableValueType<T>, Bit>
-struct FrameBit : FrameElement
+struct FrameBit final : FrameElement
 {
-    void operator<<(const std::span<const Byte> data_in) final
+    void operator<<(const std::span<const Byte> data_in) override
     {
         static auto byte_pos = pos / 8;
         static auto nbits_to_shift = pos % 8;
@@ -528,11 +531,11 @@ struct FrameBit : FrameElement
         ref_var.value = static_cast<Bit>(value);
     }
 
-    void operator>>(const std::span<Byte> data_out) final
+    void operator>>(const std::span<Byte> data_out) override
     {
         static auto byte_pos = pos / 8;
         static auto num_of_bits_to_shift = pos % 8;
-        Byte i = (ref_var.value == Bit::On) ? 1 : 0;
+        const Byte i = (ref_var.value == Bit::On) ? 1 : 0;
         data_out[byte_pos] = data_out[byte_pos] | (i << num_of_bits_to_shift);
     }
 
@@ -547,14 +550,14 @@ struct FrameBit : FrameElement
  */
 template<typename T, size_t BytePos>
     requires std::is_same_v<io::IoVariableValueType<T>, Byte>
-struct FrameByte : FrameElement
+struct FrameByte final : FrameElement
 {
-    void operator<<(const std::span<const Byte> data_in) final
+    void operator<<(const std::span<const Byte> data_in) override
     {
         ref_var.value = data_in[pos];
     }
 
-    void operator>>(const std::span<Byte> data_out) final
+    void operator>>(const std::span<Byte> data_out) override
     {
         data_out[pos] = ref_var.value;
     }
@@ -570,14 +573,14 @@ struct FrameByte : FrameElement
  */
 template<typename T, size_t BytePos> /* BytePos: position of Word value low byte */
     requires std::is_same_v<io::IoVariableValueType<T>, Word>
-struct FrameWord : FrameElement
+struct FrameWord final : FrameElement
 {
-    void operator<<(const std::span<const Byte> data_in) final
+    void operator<<(const std::span<const Byte> data_in) override
     {
         ref_var.value = data_in[pos] | (data_in[pos + 1] << 8);// LByte | HByte
     }
 
-    void operator>>(const std::span<Byte> data_out) final
+    void operator>>(const std::span<Byte> data_out) override
     {
         data_out[pos] = ref_var.value & 0xFF;
         data_out[pos + 1] = ref_var.value >> 8 & 0xFF;
@@ -594,14 +597,14 @@ struct FrameWord : FrameElement
  */
 template<typename T, size_t BytePos> /* BytePos: position of value the least significant byte */
     requires std::is_same_v<io::IoVariableValueType<T>, Cardinal>
-struct FrameCardinal : FrameElement
+struct FrameCardinal final : FrameElement
 {
-    void operator<<(const std::span<const Byte> data_in) final
+    void operator<<(const std::span<const Byte> data_in) override
     {
         ref_var.value = data_in[pos] | data_in[pos + 1] << 8 | data_in[pos + 2] << 16 | data_in[pos + 3] << 24;
     }
 
-    void operator>>(const std::span<Byte> data_out) final
+    void operator>>(const std::span<Byte> data_out) override
     {
         data_out[pos] = ref_var.value & 0xFF;
         data_out[pos + 1] = ref_var.value >> 0x08 & 0xFF;
@@ -620,9 +623,9 @@ struct FrameCardinal : FrameElement
  */
 template<typename T, size_t BytePos> /* BytePos: position of OctetString starting byte */
     requires std::is_same_v<io::IoVariableValueType<T>, OctetNumber>
-struct FrameOctetNumber : FrameElement
+struct FrameOctetNumber final : FrameElement
 {
-    void operator<<(const std::span<const Byte> data_in) final
+    void operator<<(const std::span<const Byte> data_in) override
     {
         OctetNumber value{0};
 
@@ -633,7 +636,7 @@ struct FrameOctetNumber : FrameElement
         ref_var.value = value;
     }
 
-    void operator>>(const std::span<Byte> data_out) final
+    void operator>>(const std::span<Byte> data_out) override
     {
         for (auto i = 0; i < sizeof(OctetNumber); i++) {
             data_out[pos + i] = ref_var.value >> 8 * (sizeof(OctetNumber) - 1 - i);
@@ -759,7 +762,7 @@ public:
 
 private:
     template<size_t I = 0>
-    inline void Assign(const std::span<const Byte> data_in)
+    void Assign(const std::span<const Byte> data_in)
     {
         if constexpr (I < sizeof...(FrameElementTs)) {
             std::get<I>(frame_elements_) << data_in;
@@ -768,7 +771,7 @@ private:
     }
 
     template<size_t I = 0>
-    inline void Generate(std::span<Byte> data_out)
+    void Generate(std::span<Byte> data_out)
     {
         if constexpr (I < sizeof...(FrameElementTs)) {
             std::get<I>(frame_elements_) >> data_out;
@@ -1022,38 +1025,39 @@ template<CabinetIndex Cabinet, io::IoBinding Binding>
     requires ValidCabinetIndex<Cabinet>
 using SimulatorCallDataFrame =
     typename detail::FrameGenerator<254,// Simulator Address = 254
-                           193,// FrameID = 193
-                           23, // Total number of bytes of the instance
-                           Binding,
-                           // ----------------------------------------------
-                           // Byte 0 - Address, 0xFE for Simulator
-                           // Byte 1 - Control, always 0x83
-                           // Byte 2 - FrameID, 193
-                           // ----------------------------------------------
-                           append_tuple_t<
-                               // Byte 3 - 18
-                               detail::CallDataFrameBits<Cabinet, Binding>,
-                               // Byte 19 - 22
-                               detail::FrameCardinal<io::SimulationStartTime<Binding>, 19>>>::type;
+                                    193,// FrameID = 193
+                                    23, // Total number of bytes of the instance
+                                    Binding,
+                                    // ----------------------------------------------
+                                    // Byte 0 - Address, 0xFE for Simulator
+                                    // Byte 1 - Control, always 0x83
+                                    // Byte 2 - FrameID, 193
+                                    // ----------------------------------------------
+                                    append_tuple_t<
+                                        // Byte 3 - 18
+                                        detail::CallDataFrameBits<Cabinet, Binding>,
+                                        // Byte 19 - 22
+                                        detail::FrameCardinal<io::SimulationStartTime<Binding>, 19>>>::type;
 
 template<CabinetIndex Cabinet, io::IoBinding Binding>
     requires ValidCabinetIndex<Cabinet>
-using SimulatorLoadSwitchDriversFrame = typename detail::FrameGenerator<
-    254,// Simulator Address = 254
-    66, // FrameID = 66
-    19, // Total number of bytes of the instance
-    Binding,
-    // ----------------------------------------------
-    // Byte 0 - Address, 254
-    // Byte 1 - Control, always 0x83
-    // Byte 2 - FrameID, 66
-    // ----------------------------------------------
-    concatenate_tuples_t<
-        // Byte 3 - 14
-        detail::RedChannelDriverFrameBits<Cabinet, Binding>, detail::YellowChannelDriverFrameBits<Cabinet, Binding>,
-        detail::GreenChannelDriverFrameBits<Cabinet, Binding>>
-    // Byte 15, 16, 17, 18 are unused.
-    >::type;
+using SimulatorLoadSwitchDriversFrame =
+    typename detail::FrameGenerator<254,// Simulator Address = 254
+                                    66, // FrameID = 66
+                                    19, // Total number of bytes of the instance
+                                    Binding,
+                                    // ----------------------------------------------
+                                    // Byte 0 - Address, 254
+                                    // Byte 1 - Control, always 0x83
+                                    // Byte 2 - FrameID, 66
+                                    // ----------------------------------------------
+                                    concatenate_tuples_t<
+                                        // Byte 3 - 14
+                                        detail::RedChannelDriverFrameBits<Cabinet, Binding>,    /* */
+                                        detail::YellowChannelDriverFrameBits<Cabinet, Binding>, /* */
+                                        detail::GreenChannelDriverFrameBits<Cabinet, Binding>>  /* */
+                                    // Byte 15, 16, 17, 18 are unused.
+                                    >::type;
 
 template<CabinetIndex Cabinet, io::IoBinding Binding>
     requires ValidCabinetIndex<Cabinet>
@@ -1081,7 +1085,7 @@ concept BiuType = requires { T::device_kind() == DeviceKind::Biu; };
  * @tparam Derived The specific BIU type.
  */
 template<typename Derived>
-struct Biu : public SdlcSecondaryStationDevice<Biu<Derived>>
+struct Biu : SdlcSecondaryStationDevice<Biu<Derived>>
 {
 public:
     friend class SdlcSecondaryStationDevice<Biu<Derived>>;
@@ -1279,9 +1283,7 @@ enum class LoadSwitchState : short
 
 template<typename T>
 concept LoadSwitchType = requires(T t) {
-    {
-        t.state()
-    } -> std::same_as<LoadSwitchState>;
+    { t.state() } -> std::same_as<LoadSwitchState>;
 };
 
 namespace detail {
@@ -1408,9 +1410,7 @@ namespace du {// detector unit
 
 template<typename T>
 concept DetectorUnitType = requires(T t) {
-    {
-        t.activated()
-    } -> std::same_as<bool>;
+    { t.activated() } -> std::same_as<bool>;
 };
 
 using DetectorChannels = offset_sequence_t<0, std::make_integer_sequence<DetectorChannel, MAX_VEHICLE_DETECTORS>>;
