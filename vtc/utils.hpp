@@ -1,10 +1,25 @@
 #pragma once
 
 #include <array>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 
 namespace vtc::utils {
+
+template <size_t N>
+constexpr std::tuple<std::array<char, N + 1>, size_t> to_string_array(uint16_t value) {
+    std::array<char, N + 1> buffer{}; // Allocate space for the number and null terminator
+    size_t i = N;
+
+    // Convert the number to a string. Note do-while work for constexpr
+    do {
+        buffer[--i] = '0' + (value % 10);
+        value /= 10;
+    } while (i > 0 && value > 0);
+
+    return {buffer, N - i}; // Return the array containing the number as a string
+}
 
 template<typename Tuple1, typename Tuple2, typename Tuple3>
 struct concatenate_tuples;
