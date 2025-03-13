@@ -1,6 +1,6 @@
 # VTC2 Framework Licensing Terms
 
-**The VTC2 framework. Copyright (C) 2020 - 2023 Wuping Xin**
+**The VTC2 framework. Copyright (C) 2020 - 2025 Wuping Xin**
 
 MIT License
 

@@ -28,13 +28,13 @@ TEST_CASE("TEST_CASE - basic vtc types")
 
     SUBCASE("can instantiate IoSignal with IoKind::Output and ChannelGreenWalkDriver")
     {
-        Io<IoKind::InputOutput, 1, ChannelGreenWalkDriver<1>> io(state);
+        Io<IoKind::InputOutput, 1, LoadSwitchGreenDriver<1>> io(state);
         CHECK_EQ(io.number, 1);
         CHECK_EQ(io.kind, IoKind::InputOutput);
         CHECK_EQ(io.name, "InputOutput 1");
-        CHECK_EQ(decltype(io)::io_func_type::kind, OutputFuncKind::ChannelGreenWalkDriver);
+        CHECK_EQ(decltype(io)::io_func_type::kind, OutputFuncKind::LoadSwitchGreenDriver);
         CHECK_EQ(decltype(io)::io_func_type::number, 1);
-        CHECK_EQ(decltype(io)::io_func_type::name, "ChannelGreenWalkDriver 1");
+        CHECK_EQ(decltype(io)::io_func_type::name, "LoadSwitchGreenDriver 1");
     }
 
     SUBCASE("can instantiate IoSignal with IoKind::InputOutput and InputFunctionKind")

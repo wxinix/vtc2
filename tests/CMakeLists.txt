@@ -19,5 +19,3 @@ set(INCLUDE_DIR
 target_include_directories(
         ${TARGET_EXE_NAME}
         PRIVATE ${INCLUDE_DIR})
-
-configure_file(${CMAKE_SOURCE_DIR}/vtc/hils.config.xml ${PROJECT_BINARY_DIR}/tests COPYONLY)
