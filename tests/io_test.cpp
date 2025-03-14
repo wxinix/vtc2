@@ -3,7 +3,7 @@
 #include <doctest/doctest.h>
 // clang-format on
 
-#include "io.hpp"
+#include "vtc.hpp"
 
 //----------------------------------------------------
 TEST_SUITE_BEGIN("TEST_SUITE vtc::io");
@@ -17,7 +17,7 @@ TEST_CASE("TEST_CASE - basic vtc types")
 
     SUBCASE("can instantiate IoSignal with IoKind::Input and VehicleDetectorCall<1>")
     {
-        Io<IoKind::Input, 1, VehicleDetectorCall<1>> io(state);
+        Io<IoKind::Input, 1, input::VehicleDetectorCall<1>> io(state);
         CHECK_EQ(io.number, 1);
         CHECK_EQ(io.kind, IoKind::Input);
         CHECK_EQ(io.name, "Input 1");
@@ -28,7 +28,7 @@ TEST_CASE("TEST_CASE - basic vtc types")
 
     SUBCASE("can instantiate IoSignal with IoKind::Output and ChannelGreenWalkDriver")
     {
-        Io<IoKind::InputOutput, 1, LoadSwitchGreenDriver<1>> io(state);
+        Io<IoKind::InputOutput, 1, output::LoadSwitchGreenDriver<1>> io(state);
         CHECK_EQ(io.number, 1);
         CHECK_EQ(io.kind, IoKind::InputOutput);
         CHECK_EQ(io.name, "InputOutput 1");

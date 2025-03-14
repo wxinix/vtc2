@@ -20,6 +20,37 @@ inline constexpr size_t MAX_VEHICLE_DETECTORS{128};
  */
 inline constexpr size_t MAX_SDLC_FRAME_BYTES{64};
 
+/**
+ * Maximum number of preempt inputs.
+ */
+inline constexpr size_t MAX_PREEMPTS {6};
+
+/**
+ * Maximum number of pedestrian detectors.
+ */
+inline constexpr size_t MAX_PEDESTRIAN_DETECTORS{8};
+
+/**
+ * Maximum number of rings.
+ */
+inline constexpr size_t MAX_RINGS {4};
+
+/**
+ * Maximum number of system special functions.
+ */
+inline constexpr size_t MAX_SYSTEM_SPECIAL_FUNCTIONS{4};
+
+/**
+ * Maximum number of phases.
+ */
+inline constexpr size_t MAX_PHASES{8};
+
+/**
+ * Maximum number detector rack slot groups, each group has to slots.
+ * A reset line for every 2 slots.
+ */
+inline constexpr size_t MAX_DETECTOR_RACK_SLOT_GROUPS{6}; // 4 for BIU, 6 for SIU
+
 enum class IoKind
 {
     Input,
@@ -83,7 +114,6 @@ enum class InputFuncKind
     TimingPlanC,
     TimingPlanD,
     VehicleDetectorCall,
-    VehicleDetectorReset,
     WalkRestModifier,
 };
 
@@ -113,7 +143,7 @@ enum class OutputFuncKind
     TimingPlanB,
     TimingPlanC,
     TimingPlanD,
-    VehDetectorReset
+    VehicleDetectorReset
 };
 
 template<typename T>
