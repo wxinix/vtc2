@@ -115,10 +115,11 @@ namespace input {
 //----------------------------------------
 // Address Bits
 //----------------------------------------
-using AddressBit0 = IoFunc<InputFuncKind::SystemAddressBit0, 0>;
-using AddressBit1 = IoFunc<InputFuncKind::SystemAddressBit1, 0>;
-using AddressBit2 = IoFunc<InputFuncKind::SystemAddressBit2, 0>;
-using AddressBit3 = IoFunc<InputFuncKind::SystemAddressBit3, 0>;
+using AddressBit0 = IoFunc<InputFuncKind::AddressBit0, 0>;
+using AddressBit1 = IoFunc<InputFuncKind::AddressBit1, 0>;
+using AddressBit2 = IoFunc<InputFuncKind::AddressBit2, 0>;
+using AddressBit3 = IoFunc<InputFuncKind::AddressBit3, 0>;
+using AddressBit4 = IoFunc<InputFuncKind::AddressBit4, 0>;
 
 //----------------------------------------
 // Alarm

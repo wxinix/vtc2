@@ -23,7 +23,7 @@ inline constexpr size_t MAX_SDLC_FRAME_BYTES{64};
 /**
  * Maximum number of preempt inputs.
  */
-inline constexpr size_t MAX_PREEMPTS {6};
+inline constexpr size_t MAX_PREEMPTS{6};
 
 /**
  * Maximum number of pedestrian detectors.
@@ -33,7 +33,7 @@ inline constexpr size_t MAX_PEDESTRIAN_DETECTORS{8};
 /**
  * Maximum number of rings.
  */
-inline constexpr size_t MAX_RINGS {4};
+inline constexpr size_t MAX_RINGS{4};
 
 /**
  * Maximum number of system special functions.
@@ -49,7 +49,7 @@ inline constexpr size_t MAX_PHASES{8};
  * Maximum number detector rack slot groups, each group has to slots.
  * A reset line for every 2 slots.
  */
-inline constexpr size_t MAX_DETECTOR_RACK_SLOT_GROUPS{6}; // 4 for BIU, 6 for SIU
+inline constexpr size_t MAX_DETECTOR_RACK_SLOT_GROUPS{6};// 4 for BIU, 6 for SIU
 
 enum class IoKind
 {
@@ -65,6 +65,11 @@ concept IsIoKind = std::is_same_v<T, IoKind>;
 enum class InputFuncKind
 {
     NotActive,
+    AddressBit0,
+    AddressBit1,
+    AddressBit2,
+    AddressBit3,
+    AddressBit4,
     Alarm1,
     Alarm2,
     AlternateSequenceA,
@@ -100,11 +105,6 @@ enum class InputFuncKind
     SignalPlanA,
     SignalPlanB,
     SpecialFunctionInput,
-    SystemAddressBit0,
-    SystemAddressBit1,
-    SystemAddressBit2,
-    SystemAddressBit3,
-    SystemAddressBit4,
     TBCOnline,
     TestA,
     TestB,
@@ -195,13 +195,6 @@ struct CustomIo : IoBase<IoKind, IoNumber>
 {
     using io_func_type = F;
 
-    // Conditionally include buffer only when AIoFuncKind is OutputFunctionKind
-    std::conditional_t<                                                          //
-        std::is_same_v<typename io_func_type::io_func_kind_type, OutputFuncKind>,//
-        std::atomic_bool,                                                        //
-        std::monostate>
-        buffer;
-
     explicit CustomIo(std::atomic_bool &s) : io_func_state_(s)
     {}
 
@@ -214,18 +207,25 @@ struct CustomIo : IoBase<IoKind, IoNumber>
     void WriteIoFuncState(const bool value) const
         requires std::is_same_v<typename io_func_type::io_func_kind_type, OutputFuncKind>
     {
-        buffer.store(value, std::memory_order_relaxed);
+        output_buffer.store(value, std::memory_order_relaxed);
     }
 
     void TransferOutput() const
         requires std::is_same_v<typename io_func_type::io_func_kind_type, OutputFuncKind>
     {
-        auto value = buffer.load(std::memory_order_relaxed);
+        auto value = output_buffer.load(std::memory_order_relaxed);
         io_func_state_.get().store(value, std::memory_order_relaxed);
     }
 
 private:
     std::reference_wrapper<std::atomic_bool> io_func_state_;// reference to the io_function;
+
+    // Conditionally include buffer only when AIoFuncKind is OutputFunctionKind
+    std::conditional_t<                                                          //
+        std::is_same_v<typename io_func_type::io_func_kind_type, OutputFuncKind>,//
+        std::atomic_bool,                                                        //
+        std::monostate>
+        output_buffer;
 };
 
 // Primary IoSignal template (Unimplemented) – will be specialized below
@@ -261,6 +261,12 @@ struct Io<IoKind, IoNumber, F> : CustomIo<IoKind, IoNumber, F>
 {
     explicit Io(std::atomic_bool &s) : CustomIo<IoKind, IoNumber, F>(s)
     {}
+};
+
+template<typename T>
+concept IoConcept = requires {
+    typename T::io_func_type;// Must have an associated io_func_type
+    requires std::is_base_of_v<CustomIo<T::kind, T::number, typename T::io_func_type>, T>;
 };
 
 }// namespace vtc::io::basic_types

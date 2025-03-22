@@ -64,4 +64,14 @@ template<size_t InputOutputNumber, IoFuncConcept F>
     requires IsValidInputOutputNumber<InputOutputNumber>
 using BiuInputOutput = Io<IoKind::InputOutput, InputOutputNumber, F>;
 
+template<uint8_t Address, IoConcept... T>
+    requires(Address <= 15)
+struct Biu
+{
+    constexpr static bool address_bit_0{(Address & (static_cast<uint8_t>(1) << 0)) != 0};
+    constexpr static bool address_bit_1{(Address & (static_cast<uint8_t>(1) << 1)) != 0};
+    constexpr static bool address_bit_2{(Address & (static_cast<uint8_t>(1) << 2)) != 0};
+    constexpr static bool address_bit_3{(Address & (static_cast<uint8_t>(1) << 3)) != 0};
+};
+
 }// namespace vtc::io::biu
